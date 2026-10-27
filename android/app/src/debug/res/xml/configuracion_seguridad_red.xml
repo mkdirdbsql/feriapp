@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Configuración de seguridad de red EXCLUSIVA PARA MODO DEBUG / DESARROLLO.
+    Permite tráfico HTTP sin cifrar hacia cualquier IP o dominio para facilitar
+    pruebas con un dispositivo físico (celular) conectado por red local o WiFi.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
