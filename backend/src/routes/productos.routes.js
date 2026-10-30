@@ -7,11 +7,16 @@ const {
   actualizarProducto,
   eliminarProducto
 } = require('../controllers/productos.controller');
+const { verificarToken, permitirRoles } = require('../middlewares/autenticacion');
+const { verificarDuenoProducto } = require('../middlewares/propiedad');
 
+// Consultas públicas: el consumidor no tiene cuenta.
 router.get('/puesto/:id_puesto', getProductosPorPuesto);
 router.get('/', getProductos);
-router.post('/', crearProducto);
-router.put('/:id', actualizarProducto);
-router.delete('/:id', eliminarProducto);
+
+// Gestión: solo comerciantes, y solo sobre sus propios productos (RN-01).
+router.post('/', verificarToken, permitirRoles('comerciante'), crearProducto);
+router.put('/:id', verificarToken, permitirRoles('comerciante'), verificarDuenoProducto, actualizarProducto);
+router.delete('/:id', verificarToken, permitirRoles('comerciante'), verificarDuenoProducto, eliminarProducto);
 
 module.exports = router;

@@ -49,19 +49,34 @@ async function getProductosPorPuesto(req, res) {
   }
 }
 
-// POST /api/productos
-// Body: { id_puesto, id_categoria, nombre_producto, descripcion, precio, disponible }
-// Crea el producto Y lo asocia de una vez al puesto (producto_puesto).
+// POST /api/productos   (rol comerciante, requiere token)
+// Body: { id_categoria, nombre_producto, descripcion, precio, disponible }
+// El puesto NO se envía: se toma del comerciante autenticado, así nadie
+// puede agregar productos al puesto de otra persona.
+// Crea el producto Y lo asocia a su puesto (producto_puesto).
 // Si el puesto ya tiene 3 productos, el trigger de la BD lo bloquea.
 async function crearProducto(req, res) {
-  const { id_puesto, id_categoria, nombre_producto, descripcion, precio, disponible } = req.body;
+  const { id_categoria, nombre_producto, descripcion, precio, disponible } = req.body;
 
-  if (!id_puesto || !id_categoria || !nombre_producto || precio == null) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios (id_puesto, id_categoria, nombre_producto, precio)' });
+  if (!id_categoria || !nombre_producto || precio == null) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios (id_categoria, nombre_producto, precio)' });
+  }
+  if (!(Number(precio) > 0)) {
+    return res.status(400).json({ error: 'El precio debe ser mayor a 0' });
   }
 
-  const client = await pool.connect();
+  let client;
   try {
+    const puestoResult = await pool.query(
+      'SELECT id_puesto FROM puesto WHERE id_comerciante = $1',
+      [req.usuario.id_comerciante]
+    );
+    if (puestoResult.rows.length === 0) {
+      return res.status(409).json({ error: 'Primero debes registrar tu puesto' });
+    }
+    const id_puesto = puestoResult.rows[0].id_puesto;
+
+    client = await pool.connect();
     await client.query('BEGIN');
 
     const productoResult = await client.query(
@@ -78,24 +93,35 @@ async function crearProducto(req, res) {
     );
 
     await client.query('COMMIT');
-    res.status(201).json({ mensaje: 'Producto creado correctamente', id_producto });
+    res.status(201).json({ mensaje: 'Producto creado correctamente', id_producto, id_puesto });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error al crear producto:', error);
     if (error.message && error.message.includes('máximo de 3 productos')) {
-      return res.status(409).json({ error: 'Este puesto ya tiene el máximo de 3 productos. Elimina uno antes de agregar otro.' });
+      return res.status(409).json({ error: 'Tu puesto ya tiene el máximo de 3 productos. Elimina uno antes de agregar otro.' });
+    }
+    if (error.code === '23503') {
+      return res.status(400).json({ error: 'La categoría indicada no existe' });
     }
     res.status(500).json({ error: 'Error al crear producto' });
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 }
 
-// PUT /api/productos/:id
+// PUT /api/productos/:id   (rol comerciante, solo el dueño)
 // Body: cualquier combinación de { nombre_producto, descripcion, precio, disponible }
 async function actualizarProducto(req, res) {
   const { id } = req.params;
   const { nombre_producto, descripcion, precio, disponible } = req.body;
+
+  if (precio != null && !(Number(precio) > 0)) {
+    return res.status(400).json({ error: 'El precio debe ser mayor a 0' });
+  }
 
   try {
     const result = await pool.query(
@@ -119,7 +145,7 @@ async function actualizarProducto(req, res) {
   }
 }
 
-// DELETE /api/productos/:id
+// DELETE /api/productos/:id   (rol comerciante, solo el dueño)
 // Borra el producto por completo (sus imágenes y su relación con el
 // puesto se borran solas, por el ON DELETE CASCADE).
 async function eliminarProducto(req, res) {

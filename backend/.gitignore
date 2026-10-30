@@ -1,2 +1,6 @@
 node_modules/
 .env
+uploads/productos/*
+uploads/puestos/*
+!uploads/productos/.gitkeep
+!uploads/puestos/.gitkeep

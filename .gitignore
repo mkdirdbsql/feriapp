@@ -1,18 +1,29 @@
+# General
+node_modules/
+.env
+
 # Backend
 backend/node_modules/
 backend/.env
+backend/uploads/productos/*
+backend/uploads/puestos/*
+!backend/uploads/productos/.gitkeep
+!backend/uploads/puestos/.gitkeep
+uploads/productos/*
+uploads/puestos/*
+!uploads/productos/.gitkeep
+!uploads/puestos/.gitkeep
 
 # Android
 android/local.properties
 android/.gradle/
 android/build/
 android/app/build/
-android/.idea/
+
+# IDE / Sistema
+.idea/
 *.iml
 *.apk
 *.aab
-
-# Sistema
 .DS_Store
 Thumbs.db
-.idea/
