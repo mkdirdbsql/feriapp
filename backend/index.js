@@ -7,6 +7,8 @@ const puestosRoutes = require('./src/routes/puestos.routes');
 const productosRoutes = require('./src/routes/productos.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const comerciantesRoutes = require('./src/routes/comerciantes.routes');
+const busquedasRoutes = require('./src/routes/busquedas.routes');
+const adminRoutes = require('./src/routes/admin.routes');
 
 const app = express();
 
@@ -21,6 +23,8 @@ app.use('/api/puestos', puestosRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/comerciantes', comerciantesRoutes);
+app.use('/api/busquedas', busquedasRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send('API de FeriApp funcionando correctamente');
