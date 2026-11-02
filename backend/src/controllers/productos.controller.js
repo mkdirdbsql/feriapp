@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { borrarArchivoSubido } = require('../config/archivos');
 
 // Escapa los comodines de LIKE para que buscar "50%" no coincida con todo.
 function escaparComodines(texto) {
@@ -214,16 +215,25 @@ async function actualizarProducto(req, res) {
 
 // DELETE /api/productos/:id   (rol comerciante, solo el dueño)
 // Borra el producto por completo (sus imágenes y su relación con el
-// puesto se borran solas, por el ON DELETE CASCADE).
+// puesto se borran solas, por el ON DELETE CASCADE; los archivos de imagen
+// se borran del disco aquí).
 async function eliminarProducto(req, res) {
   const { id } = req.params;
   try {
+    // Se leen las rutas antes de borrar: después las filas ya no existen.
+    const imagenes = await pool.query(
+      'SELECT ruta_imagen FROM imagen_producto WHERE id_producto = $1',
+      [id]
+    );
     const result = await pool.query(
       'DELETE FROM producto WHERE id_producto = $1 RETURNING id_producto',
       [id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    for (const fila of imagenes.rows) {
+      await borrarArchivoSubido(fila.ruta_imagen);
     }
     res.json({ mensaje: 'Producto eliminado correctamente' });
   } catch (error) {
