@@ -5,6 +5,9 @@ import org.osmdroid.config.Configuration
 import java.io.File
 
 class AplicacionFeria : Application() {
+
+    val contenedorApp: ContenedorApp by lazy { ContenedorApp(this) }
+
     override fun onCreate() {
         super.onCreate()
         Configuration.getInstance().userAgentValue = packageName

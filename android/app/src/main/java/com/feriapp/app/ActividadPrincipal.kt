@@ -1,11 +1,15 @@
 package com.feriapp.app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.feriapp.app.ui.common.FragmentoMapa
+import com.feriapp.app.util.Resultado
+import kotlinx.coroutines.launch
 
 class ActividadPrincipal : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,7 +22,6 @@ class ActividadPrincipal : AppCompatActivity() {
             insets
         }
 
-        // PRUEBA TEMPORAL: eliminar
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.main, FragmentoMapa())
