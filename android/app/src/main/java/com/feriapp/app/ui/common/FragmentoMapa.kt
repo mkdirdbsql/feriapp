@@ -16,7 +16,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-class FragmentoMapa : Fragment() {
+class FragmentoMapa : Fragment() { //BORRAR ESTA CLASE? preguntar a claude antes de iniciar la fase 5
 
     private var _binding: FragmentoMapaBinding? = null
     private val binding get() = _binding!!
