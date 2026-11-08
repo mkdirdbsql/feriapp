@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/grafo_navegacion"
+    app:startDestination="@id/fragmentoCarga">
+
+    <!-- SPLASH -->
+    <fragment
+        android:id="@+id/fragmentoCarga"
+        android:name="com.feriapp.app.ui.splash.FragmentoCarga"
+        android:label="FragmentoCarga"
+        tools:layout="@layout/fragmento_carga">
+        <action
+            android:id="@+id/accionCargaASeleccionUsuario"
+            app:destination="@id/fragmentoSeleccionUsuario"
+            app:popUpTo="@id/fragmentoCarga"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/accionCargaAInicioComerciante"
+            app:destination="@id/fragmentoInicioComerciante"
+            app:popUpTo="@id/fragmentoCarga"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/accionCargaAInicioAdministrador"
+            app:destination="@id/fragmentoInicioAdministrador"
+            app:popUpTo="@id/fragmentoCarga"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- AUTH -->
+    <fragment
+        android:id="@+id/fragmentoSeleccionUsuario"
+        android:name="com.feriapp.app.ui.auth.FragmentoSeleccionUsuario"
+        android:label="FragmentoSeleccionUsuario"
+        tools:layout="@layout/fragmento_seleccion_usuario">
+        <action
+            android:id="@+id/accionSeleccionAInicioConsumidor"
+            app:destination="@id/fragmentoInicioConsumidor" />
+        <action
+            android:id="@+id/accionSeleccionARegistro"
+            app:destination="@id/fragmentoRegistro" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoRegistro"
+        android:name="com.feriapp.app.ui.auth.FragmentoRegistro"
+        android:label="FragmentoRegistro"
+        tools:layout="@layout/fragmento_registro">
+        <action
+            android:id="@+id/accionRegistroAInicioComerciante"
+            app:destination="@id/fragmentoInicioComerciante"
+            app:popUpTo="@id/fragmentoSeleccionUsuario"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/accionRegistroAInicioSesion"
+            app:destination="@id/fragmentoInicioSesion" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoInicioSesion"
+        android:name="com.feriapp.app.ui.auth.FragmentoInicioSesion"
+        android:label="FragmentoInicioSesion"
+        tools:layout="@layout/fragmento_inicio_sesion">
+        <action
+            android:id="@+id/accionInicioSesionAInicioComerciante"
+            app:destination="@id/fragmentoInicioComerciante"
+            app:popUpTo="@id/fragmentoSeleccionUsuario"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/accionInicioSesionAInicioAdministrador"
+            app:destination="@id/fragmentoInicioAdministrador"
+            app:popUpTo="@id/fragmentoSeleccionUsuario"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- CONSUMIDOR -->
+    <fragment
+        android:id="@+id/fragmentoInicioConsumidor"
+        android:name="com.feriapp.app.ui.consumidor.FragmentoInicioConsumidor"
+        android:label="FragmentoInicioConsumidor"
+        tools:layout="@layout/fragmento_inicio_consumidor">
+        <action
+            android:id="@+id/accionInicioConsumidorABusqueda"
+            app:destination="@id/fragmentoBusqueda" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoBusqueda"
+        android:name="com.feriapp.app.ui.consumidor.FragmentoBusqueda"
+        android:label="FragmentoBusqueda"
+        tools:layout="@layout/fragmento_busqueda">
+        <action
+            android:id="@+id/accionBusquedaAResultados"
+            app:destination="@id/fragmentoResultados" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoResultados"
+        android:name="com.feriapp.app.ui.consumidor.FragmentoResultados"
+        android:label="FragmentoResultados"
+        tools:layout="@layout/fragmento_resultados">
+        <argument
+            android:name="nombre"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="idCategoria"
+            android:defaultValue="-1"
+            app:argType="integer" />
+    </fragment>
+
+    <!-- COMERCIANTE -->
+    <fragment
+        android:id="@+id/fragmentoInicioComerciante"
+        android:name="com.feriapp.app.ui.comerciante.FragmentoInicioComerciante"
+        android:label="FragmentoInicioComerciante"
+        tools:layout="@layout/fragmento_inicio_comerciante">
+        <action
+            android:id="@+id/accionInicioComercianteAAgregarPuesto"
+            app:destination="@id/fragmentoAgregarPuesto" />
+        <action
+            android:id="@+id/accionInicioComercianteAAgregarProducto"
+            app:destination="@id/fragmentoAgregarProducto" />
+        <action
+            android:id="@+id/accionInicioComercianteASeleccionUsuario"
+            app:destination="@id/fragmentoSeleccionUsuario"
+            app:popUpTo="@id/fragmentoInicioComerciante"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoAgregarPuesto"
+        android:name="com.feriapp.app.ui.comerciante.FragmentoAgregarPuesto"
+        android:label="FragmentoAgregarPuesto"
+        tools:layout="@layout/fragmento_agregar_puesto" />
+
+    <fragment
+        android:id="@+id/fragmentoAgregarProducto"
+        android:name="com.feriapp.app.ui.comerciante.FragmentoAgregarProducto"
+        android:label="FragmentoAgregarProducto"
+        tools:layout="@layout/fragmento_agregar_producto" />
+
+    <!-- ADMINISTRADOR -->
+    <fragment
+        android:id="@+id/fragmentoInicioAdministrador"
+        android:name="com.feriapp.app.ui.admin.FragmentoInicioAdministrador"
+        android:label="FragmentoInicioAdministrador"
+        tools:layout="@layout/fragmento_inicio_administrador">
+        <action
+            android:id="@+id/accionInicioAdministradorAEdicionUsuario"
+            app:destination="@id/fragmentoEdicionUsuario" />
+        <action
+            android:id="@+id/accionInicioAdministradorASeleccionUsuario"
+            app:destination="@id/fragmentoSeleccionUsuario"
+            app:popUpTo="@id/fragmentoInicioAdministrador"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentoEdicionUsuario"
+        android:name="com.feriapp.app.ui.admin.FragmentoEdicionUsuario"
+        android:label="FragmentoEdicionUsuario"
+        tools:layout="@layout/fragmento_edicion_usuario">
+        <argument
+            android:name="idComerciante"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </fragment>
+
+</navigation>

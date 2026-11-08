@@ -21,11 +21,5 @@ class ActividadPrincipal : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.main, FragmentoMapa())
-                .commit()
-        }
     }
 }
