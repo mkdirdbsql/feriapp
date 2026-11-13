@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">FeriApp</string>
     <string name="descripcion_logo_feriapp">Logo de FeriApp</string>
+    <string name="descripcion_imagen_bienvenida">Imagen de la Feria 16 de Julio</string>
+    <string name="bienvenida_feria">Bienvenid@ a la\nFeria 16 de Julio</string>
+    <string name="entrar_como">Entrar Como&#8230;</string>
+    <string name="btn_comerciante">Comerciante</string>
+    <string name="btn_consumidor">Consumidor</string>
+    <string name="separador_o">o</string>
 </resources>
