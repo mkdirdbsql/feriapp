@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
-    <TextView
-        style="@style/estilo_titulo"
-        android:layout_width="wrap_content"
+    <ImageView
+        android:id="@+id/imgLogoFeriapp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:text="Fragmento Carga" />
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/descripcion_logo_feriapp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/logo_feriapp" />
 
-    <ProgressBar
-        android:layout_width="wrap_content"
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/indicadorProgreso"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="32dp"
+        android:indeterminate="true"
+        app:indicatorColor="?attr/colorPrimary"
+        app:trackCornerRadius="4dp" />
 
 </LinearLayout>

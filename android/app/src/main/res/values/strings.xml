@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FeriApp</string>
+    <string name="descripcion_logo_feriapp">Logo de FeriApp</string>
 </resources>
