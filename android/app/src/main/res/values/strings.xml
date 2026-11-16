@@ -28,4 +28,19 @@
     <string name="error_telefono_invalido">Ingresa un teléfono válido (7 a 15 dígitos)</string>
     <string name="error_contrasena_corta">La contraseña debe tener al menos 6 caracteres</string>
     <string name="error_contrasenas_no_coinciden">Las contraseñas no coinciden</string>
+
+    <!-- CONSUMIDOR -->
+    <string name="buscar_producto">Buscar producto</string>
+    <string name="etiqueta_ubicacion">Ubicación:</string>
+    <string name="activa_ubicacion_primero">Activa la ubicación primero.</string>
+    <string name="aviso_gps_desactivado">El GPS está desactivado o se denegó el permiso de ubicación.</string>
+    <string name="aviso_permiso_denegado">No se concedió el permiso de ubicación.</string>
+    <string name="buscando_posicion">Ubicación no disponible aún.</string>
+    <string name="descripcion_lupa">Buscar</string>
+    <string name="descripcion_menu">Menú de navegación</string>
+    <string name="descripcion_mi_ubicacion">Mi ubicación</string>
+    <string name="descripcion_acercar">Acercar mapa</string>
+    <string name="descripcion_alejar">Alejar mapa</string>
+    <string name="descripcion_cerrar">Cerrar</string>
+    <string name="descripcion_imagen_puesto">Imagen del puesto</string>
 </resources>
