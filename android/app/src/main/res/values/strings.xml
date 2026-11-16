@@ -16,4 +16,16 @@
     <string name="pregunta_no_tienes_cuenta">¿No tienes cuenta?</string>
     <string name="btn_registrarse">Registrarse</string>
     <string name="error_campos_vacios">Por favor, completa todos los campos</string>
+    <string name="titulo_registro">Ingresa tus datos</string>
+    <string name="subtitulo_registro">Este registro solo se hace una vez</string>
+    <string name="etiqueta_nombre">Nombre</string>
+    <string name="etiqueta_apellido">Apellido</string>
+    <string name="etiqueta_telefono">Teléfono</string>
+    <string name="etiqueta_nombre_comercial">Nombre comercial</string>
+    <string name="etiqueta_descripcion_comercio">Descripción del comercio (opcional)</string>
+    <string name="etiqueta_repetir_contrasena">Repetir contraseña</string>
+    <string name="error_campo_requerido">Este campo es obligatorio</string>
+    <string name="error_telefono_invalido">Ingresa un teléfono válido (7 a 15 dígitos)</string>
+    <string name="error_contrasena_corta">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_contrasenas_no_coinciden">Las contraseñas no coinciden</string>
 </resources>
