@@ -31,7 +31,7 @@ class FragmentoSeleccionUsuario : Fragment() {
         }
 
         binding.btnIrARegistroComerciante.setOnClickListener {
-            findNavController().navigate(R.id.accionSeleccionARegistro)
+            findNavController().navigate(R.id.accionSeleccionAInicioSesion)
         }
     }
 

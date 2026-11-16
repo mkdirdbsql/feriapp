@@ -7,4 +7,13 @@
     <string name="btn_comerciante">Comerciante</string>
     <string name="btn_consumidor">Consumidor</string>
     <string name="separador_o">o</string>
+    <string name="titulo_inicio_sesion_comerciante">Comerciante</string>
+    <string name="descripcion_icono_usuario">Ícono de usuario</string>
+    <string name="etiqueta_usuario">Usuario</string>
+    <string name="ayuda_usuario">Tu número de teléfono</string>
+    <string name="etiqueta_contrasena">Contraseña</string>
+    <string name="btn_ingresar">Ingresar</string>
+    <string name="pregunta_no_tienes_cuenta">¿No tienes cuenta?</string>
+    <string name="btn_registrarse">Registrarse</string>
+    <string name="error_campos_vacios">Por favor, completa todos los campos</string>
 </resources>

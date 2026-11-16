@@ -3,9 +3,9 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
 // POST /api/auth/login
-// Body: { "identificador": "70011001", "contrasena": "clave123" }
-//  - Comerciante: identificador = su teléfono.
-//  - Administrador: identificador = su nombre_usuario.
+// Body: { "identificador": "79656078", "contrasena": "clave123" }
+//  - identificador puede ser el teléfono o el nombre_usuario de la cuenta,
+//    sea comerciante o administrador (el nombre de usuario no distingue mayúsculas).
 // Respuesta: { token, rol, id_usuario, id_comerciante, nombre }
 // El token del comerciante dura 365 días (se registra una sola vez);
 // el del administrador dura 7 días.
@@ -19,29 +19,25 @@ async function login(req, res) {
   try {
     const buscado = String(identificador).trim();
 
-    let resultado = await pool.query(
+    const candidatos = await pool.query(
       `SELECT id_usuario, nombre, rol, contrasena
        FROM usuario
-       WHERE telefono = $1 AND rol = 'comerciante'`,
+       WHERE telefono = $1 OR LOWER(nombre_usuario) = LOWER($1)`,
       [buscado]
     );
 
-    if (resultado.rows.length === 0) {
-      resultado = await pool.query(
-        `SELECT id_usuario, nombre, rol, contrasena
-         FROM usuario
-         WHERE nombre_usuario = $1 AND rol = 'administrador'`,
-        [buscado]
-      );
+    // Normalmente hay una sola cuenta. Si por casualidad el teléfono de una
+    // coincide con el nombre de usuario de otra, entra la que tenga esa contraseña.
+    let usuario = null;
+    for (const candidato of candidatos.rows) {
+      if (await bcrypt.compare(String(contrasena), candidato.contrasena)) {
+        usuario = candidato;
+        break;
+      }
     }
 
-    const usuario = resultado.rows[0];
-    const claveCorrecta = usuario
-      ? await bcrypt.compare(String(contrasena), usuario.contrasena)
-      : false;
-
-    // Mismo mensaje en ambos casos para no revelar si la cuenta existe.
-    if (!claveCorrecta) {
+    // Mismo mensaje en todos los casos para no revelar si la cuenta existe.
+    if (!usuario) {
       return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     }
 

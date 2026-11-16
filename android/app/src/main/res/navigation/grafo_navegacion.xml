@@ -38,8 +38,8 @@
             android:id="@+id/accionSeleccionAInicioConsumidor"
             app:destination="@id/fragmentoInicioConsumidor" />
         <action
-            android:id="@+id/accionSeleccionARegistro"
-            app:destination="@id/fragmentoRegistro" />
+            android:id="@+id/accionSeleccionAInicioSesion"
+            app:destination="@id/fragmentoInicioSesion" />
     </fragment>
 
     <fragment
@@ -72,6 +72,9 @@
             app:destination="@id/fragmentoInicioAdministrador"
             app:popUpTo="@id/fragmentoSeleccionUsuario"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/accionInicioSesionARegistro"
+            app:destination="@id/fragmentoRegistro" />
     </fragment>
 
     <!-- CONSUMIDOR -->
