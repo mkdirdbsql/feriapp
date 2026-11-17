@@ -26,6 +26,10 @@ class FragmentoMapa : Fragment() {
     private var capaUbicacion: MyLocationNewOverlay? = null
     private val marcadoresPuestos = mutableListOf<Marker>()
 
+    private var ultimaListaPuestos: List<Puesto>? = null
+    private var ultimoCentro: GeoPoint? = null
+    private var ultimoZoom: Double? = null
+
     var alSeleccionarMarcador: ((idPuesto: Int) -> Unit)? = null
     private var callbackUbicacion: ((Boolean) -> Unit)? = null
 
@@ -53,6 +57,7 @@ class FragmentoMapa : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configurarMapa()
+        restaurarEstadoMapa()
     }
 
     private fun configurarMapa() {
@@ -63,9 +68,15 @@ class FragmentoMapa : Fragment() {
             setScrollableAreaLimitDouble(LimitesFeria.cajaLimites)
             minZoomLevel = 13.0
             maxZoomLevel = 19.0
-            controller.setZoom(16.0)
-            val puntoInicial = GeoPoint(-16.494905, -68.173642)
+            controller.setZoom(ultimoZoom ?: 16.0)
+            val puntoInicial = ultimoCentro ?: GeoPoint(-16.494905, -68.173642)
             controller.setCenter(puntoInicial)
+        }
+    }
+
+    private fun restaurarEstadoMapa() {
+        if (ultimaListaPuestos != null) {
+            dibujarMarcadoresInterno()
         }
     }
 
@@ -122,21 +133,32 @@ class FragmentoMapa : Fragment() {
     fun centrarEnMiUbicacion(): Boolean {
         val mapa = _binding?.mapaFeria ?: return false
         val miUbicacion = capaUbicacion?.myLocation ?: return false
+        ultimoCentro = miUbicacion
         mapa.controller.animateTo(miUbicacion)
         return true
     }
 
     fun acercar() {
-        _binding?.mapaFeria?.controller?.zoomIn()
+        _binding?.mapaFeria?.let { mapa ->
+            mapa.controller.zoomIn()
+            ultimoZoom = mapa.zoomLevelDouble
+        }
     }
 
     fun alejar() {
-        _binding?.mapaFeria?.controller?.zoomOut()
+        _binding?.mapaFeria?.let { mapa ->
+            mapa.controller.zoomOut()
+            ultimoZoom = mapa.zoomLevelDouble
+        }
     }
 
     fun centrarEn(latitud: Double, longitud: Double, zoom: Double? = null) {
-        val mapa = _binding?.mapaFeria ?: return
         val punto = GeoPoint(latitud, longitud)
+        ultimoCentro = punto
+        if (zoom != null) {
+            ultimoZoom = zoom
+        }
+        val mapa = _binding?.mapaFeria ?: return
         if (zoom != null) {
             mapa.controller.setZoom(zoom)
         }
@@ -144,8 +166,18 @@ class FragmentoMapa : Fragment() {
     }
 
     fun mostrarMarcadores(puestos: List<Puesto>) {
+        ultimaListaPuestos = puestos
+        if (_binding != null) {
+            dibujarMarcadoresInterno()
+        }
+    }
+
+    private fun dibujarMarcadoresInterno() {
         val mapa = _binding?.mapaFeria ?: return
-        limpiarMarcadores()
+        val puestos = ultimaListaPuestos ?: return
+
+        marcadoresPuestos.forEach { mapa.overlays.remove(it) }
+        marcadoresPuestos.clear()
 
         puestos.forEach { puesto ->
             val marcador = Marker(mapa).apply {
@@ -165,6 +197,7 @@ class FragmentoMapa : Fragment() {
     }
 
     fun limpiarMarcadores() {
+        ultimaListaPuestos = null
         val mapa = _binding?.mapaFeria ?: return
         marcadoresPuestos.forEach { mapa.overlays.remove(it) }
         marcadoresPuestos.clear()
@@ -174,11 +207,18 @@ class FragmentoMapa : Fragment() {
     override fun onResume() {
         super.onResume()
         _binding?.mapaFeria?.onResume()
+        if (ultimaListaPuestos != null) {
+            dibujarMarcadoresInterno()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        _binding?.mapaFeria?.onPause()
+        _binding?.mapaFeria?.let { mapa ->
+            ultimoCentro = mapa.mapCenter as? GeoPoint ?: ultimoCentro
+            ultimoZoom = mapa.zoomLevelDouble
+            mapa.onPause()
+        }
     }
 
     override fun onDestroyView() {

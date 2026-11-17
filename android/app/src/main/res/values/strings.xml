@@ -43,4 +43,8 @@
     <string name="descripcion_alejar">Alejar mapa</string>
     <string name="descripcion_cerrar">Cerrar</string>
     <string name="descripcion_imagen_puesto">Imagen del puesto</string>
+    <string name="titulo_categorias">Categorías</string>
+    <string name="sin_coincidencias_busqueda">No encontramos productos con ese nombre</string>
+    <string name="escribe_algo_buscar">Escribe algo para buscar</string>
+    <string name="descripcion_volver">Volver</string>
 </resources>

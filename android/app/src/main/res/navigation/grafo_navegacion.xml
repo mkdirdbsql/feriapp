@@ -84,17 +84,7 @@
         android:label="FragmentoInicioConsumidor"
         tools:layout="@layout/fragmento_inicio_consumidor">
         <action
-            android:id="@+id/accionInicioConsumidorABusqueda"
-            app:destination="@id/fragmentoBusqueda" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/fragmentoBusqueda"
-        android:name="com.feriapp.app.ui.consumidor.FragmentoBusqueda"
-        android:label="FragmentoBusqueda"
-        tools:layout="@layout/fragmento_busqueda">
-        <action
-            android:id="@+id/accionBusquedaAResultados"
+            android:id="@+id/accionInicioConsumidorAResultados"
             app:destination="@id/fragmentoResultados" />
     </fragment>
 

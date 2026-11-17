@@ -12,41 +12,65 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- BARRA DE BÚSQUEDA (ARRIBA) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardBarraBusqueda"
+        <!-- BARRA SUPERIOR (BÚSQUEDA Y FLECHA VOLVER) -->
+        <LinearLayout
+            android:id="@+id/layoutBarraSuperior"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <ImageButton
+                android:id="@+id/btnVolverBusqueda"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/descripcion_volver"
+                android:src="@drawable/ic_flecha_atras"
+                android:visibility="gone" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBarraBusqueda"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="12dp">
+                android:layout_weight="1"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@string/descripcion_lupa"
-                    android:src="@drawable/ic_lupa" />
-
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/buscar_producto"
-                    android:textColor="@color/color_texto"
-                    android:textSize="16sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@string/descripcion_lupa"
+                        android:src="@drawable/ic_lupa" />
+
+                    <EditText
+                        android:id="@+id/etBuscarProducto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@null"
+                        android:hint="@string/buscar_producto"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:textColor="@color/color_texto"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
         <!-- MAPA (CENTRO) -->
         <androidx.fragment.app.FragmentContainerView
@@ -57,7 +81,7 @@
             app:layout_constraintBottom_toTopOf="@id/barraInferior"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardBarraBusqueda" />
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior" />
 
         <!-- INDICADOR CARGANDO PUESTOS -->
         <ProgressBar
@@ -69,6 +93,92 @@
             app:layout_constraintEnd_toEndOf="@id/contenedorMapa"
             app:layout_constraintStart_toStartOf="@id/contenedorMapa"
             app:layout_constraintTop_toTopOf="@id/contenedorMapa" />
+
+        <!-- CAPA OSCURA SEMITRANSPARENTE (MODO BÚSQUEDA) -->
+        <View
+            android:id="@+id/capaOscuraBusqueda"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#80000000"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior" />
+
+        <!-- PANEL DE BÚSQUEDA (CATEGORÍAS / SUGERENCIAS) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/panelBusqueda"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- CONTENEDOR CATEGORÍAS -->
+                <LinearLayout
+                    android:id="@+id/contenedorCategorias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/estilo_titulo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/titulo_categorias"
+                        android:textSize="18sp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupCategorias"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        app:chipSpacing="8dp"
+                        app:singleLine="false" />
+                </LinearLayout>
+
+                <!-- AVISO SIN COINCIDENCIAS -->
+                <TextView
+                    android:id="@+id/tvSinCoincidencias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/sin_coincidencias_busqueda"
+                    android:textColor="@color/color_error"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <!-- CONTENEDOR SUGERENCIAS -->
+                <LinearLayout
+                    android:id="@+id/contenedorSugerencias"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSugerencias"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- TARJETA PUESTO SELECCIONADO (OVERLAY) -->
         <com.google.android.material.card.MaterialCardView

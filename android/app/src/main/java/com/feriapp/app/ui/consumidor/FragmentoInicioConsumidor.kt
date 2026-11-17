@@ -5,12 +5,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,11 +24,14 @@ import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.feriapp.app.AplicacionFeria
 import com.feriapp.app.R
+import com.feriapp.app.data.model.Categoria
+import com.feriapp.app.data.model.ProductoBuscado
 import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoInicioConsumidorBinding
 import com.feriapp.app.ui.common.FragmentoMapa
 import com.feriapp.app.ui.common.fabricaViewModel
 import com.feriapp.app.util.construirUrlImagen
+import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
 
 class FragmentoInicioConsumidor : Fragment() {
@@ -38,8 +46,18 @@ class FragmentoInicioConsumidor : Fragment() {
         }
     }
 
+    private val busquedaViewModel: BusquedaViewModel by viewModels {
+        fabricaViewModel {
+            val contenedor = (requireActivity().application as AplicacionFeria).contenedorApp
+            BusquedaViewModel(contenedor.repositorioCategorias, contenedor.repositorioProductos)
+        }
+    }
+
     private var fragmentoMapa: FragmentoMapa? = null
     private var listaPuestosCargados: List<Puesto> = emptyList()
+    private var modoBusquedaActivo = false
+
+    private lateinit var adaptadorSugerencias: AdaptadorSugerencias
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,17 +77,142 @@ class FragmentoInicioConsumidor : Fragment() {
         configurarControlesUbicacion()
         configurarControlesZoom()
         configurarTarjetaPuesto()
+        configurarModoBusqueda()
         configurarBotonAtras()
         observarEstadoViewModel()
     }
 
     private fun configurarNavegacion() {
-        binding.cardBarraBusqueda.setOnClickListener {
-            findNavController().navigate(R.id.accionInicioConsumidorABusqueda)
-        }
-
         binding.btnMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun configurarModoBusqueda() {
+        adaptadorSugerencias = AdaptadorSugerencias { producto ->
+            busquedaViewModel.registrarBusqueda(producto.nombreProducto, producto.idCategoria)
+            val bundle = bundleOf("nombre" to producto.nombreProducto, "idCategoria" to producto.idCategoria)
+            desactivarModoBusqueda()
+            findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+        }
+        binding.rvSugerencias.adapter = adaptadorSugerencias
+
+        binding.etBuscarProducto.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                activarModoBusqueda()
+            }
+        }
+
+        binding.etBuscarProducto.setOnClickListener {
+            activarModoBusqueda()
+        }
+
+        binding.btnVolverBusqueda.setOnClickListener {
+            desactivarModoBusqueda()
+        }
+
+        binding.etBuscarProducto.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s?.toString().orEmpty()
+                if (modoBusquedaActivo) {
+                    busquedaViewModel.buscarSugerencias(query)
+                }
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        binding.etBuscarProducto.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val texto = binding.etBuscarProducto.text?.toString()?.trim().orEmpty()
+                if (texto.isEmpty()) {
+                    Toast.makeText(requireContext(), R.string.escribe_algo_buscar, Toast.LENGTH_SHORT).show()
+                } else {
+                    busquedaViewModel.registrarBusqueda(texto, null)
+                    val bundle = bundleOf("nombre" to texto, "idCategoria" to -1)
+                    desactivarModoBusqueda()
+                    findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+                }
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun activarModoBusqueda() {
+        if (modoBusquedaActivo) return
+        modoBusquedaActivo = true
+
+        binding.btnVolverBusqueda.visibility = View.VISIBLE
+        binding.capaOscuraBusqueda.visibility = View.VISIBLE
+        binding.panelBusqueda.visibility = View.VISIBLE
+
+        binding.etBuscarProducto.requestFocus()
+        mostrarTeclado(binding.etBuscarProducto)
+
+        busquedaViewModel.cargarCategorias()
+    }
+
+    private fun desactivarModoBusqueda() {
+        if (!modoBusquedaActivo) return
+        modoBusquedaActivo = false
+
+        ocultarTeclado()
+        binding.etBuscarProducto.clearFocus()
+        binding.etBuscarProducto.setText("")
+
+        binding.btnVolverBusqueda.visibility = View.GONE
+        binding.capaOscuraBusqueda.visibility = View.GONE
+        binding.panelBusqueda.visibility = View.GONE
+        binding.contenedorSugerencias.visibility = View.GONE
+        binding.tvSinCoincidencias.visibility = View.GONE
+        binding.contenedorCategorias.visibility = View.VISIBLE
+    }
+
+    private fun mostrarTeclado(view: View) {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun ocultarTeclado() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+    }
+
+    private fun mostrarCategorias(categorias: List<Categoria>) {
+        binding.contenedorCategorias.visibility = View.VISIBLE
+        binding.contenedorSugerencias.visibility = View.GONE
+        binding.tvSinCoincidencias.visibility = View.GONE
+
+        binding.chipGroupCategorias.removeAllViews()
+        categorias.forEach { categoria ->
+            val chip = Chip(requireContext()).apply {
+                text = categoria.nombreCategoria
+                isCheckable = false
+                isClickable = true
+                setOnClickListener {
+                    busquedaViewModel.registrarBusqueda(categoria.nombreCategoria, categoria.idCategoria)
+                    val bundle = bundleOf("nombre" to "", "idCategoria" to categoria.idCategoria)
+                    desactivarModoBusqueda()
+                    findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+                }
+            }
+            binding.chipGroupCategorias.addView(chip)
+        }
+    }
+
+    private fun mostrarSugerencias(sugerencias: List<ProductoBuscado>, sinCoincidencias: Boolean) {
+        if (sinCoincidencias) {
+            binding.contenedorCategorias.visibility = View.VISIBLE
+            binding.contenedorSugerencias.visibility = View.GONE
+            binding.tvSinCoincidencias.visibility = View.VISIBLE
+        } else {
+            binding.contenedorCategorias.visibility = View.GONE
+            binding.tvSinCoincidencias.visibility = View.GONE
+            binding.contenedorSugerencias.visibility = View.VISIBLE
+
+            adaptadorSugerencias.actualizarLista(sugerencias)
         }
     }
 
@@ -167,6 +310,8 @@ class FragmentoInicioConsumidor : Fragment() {
                 override fun handleOnBackPressed() {
                     if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                         binding.drawerLayout.closeDrawer(GravityCompat.START)
+                    } else if (modoBusquedaActivo) {
+                        desactivarModoBusqueda()
                     } else if (binding.tarjetaPuesto.visibility == View.VISIBLE) {
                         binding.tarjetaPuesto.visibility = View.GONE
                     } else {
@@ -192,6 +337,29 @@ class FragmentoInicioConsumidor : Fragment() {
                     }
                     is EstadoInicioConsumidor.Error -> {
                         binding.indicadorCargandoPuestos.visibility = View.GONE
+                        Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            busquedaViewModel.estado.collect { estado ->
+                when (estado) {
+                    is EstadoBusqueda.CargandoCategorias -> {
+                        // Carga silenciosa
+                    }
+                    is EstadoBusqueda.ListoCategorias -> {
+                        if (modoBusquedaActivo) {
+                            mostrarCategorias(estado.categorias)
+                        }
+                    }
+                    is EstadoBusqueda.Sugerencias -> {
+                        if (modoBusquedaActivo) {
+                            mostrarSugerencias(estado.sugerencias, estado.sinCoincidencias)
+                        }
+                    }
+                    is EstadoBusqueda.Error -> {
                         Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
                     }
                 }
