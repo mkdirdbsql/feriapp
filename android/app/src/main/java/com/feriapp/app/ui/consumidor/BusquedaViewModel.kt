@@ -25,6 +25,17 @@ sealed class EstadoBusqueda {
     data class Error(val mensaje: String) : EstadoBusqueda()
 }
 
+sealed class EstadoResultadosBusqueda {
+    data object Inicial : EstadoResultadosBusqueda()
+    data object Cargando : EstadoResultadosBusqueda()
+    data class Exito(
+        val terminoBuscado: String,
+        val productosAgrupados: List<ProductoBuscado>
+    ) : EstadoResultadosBusqueda()
+    data class SinResultados(val mensaje: String) : EstadoResultadosBusqueda()
+    data class Error(val mensaje: String) : EstadoResultadosBusqueda()
+}
+
 class BusquedaViewModel(
     private val repositorioCategorias: RepositorioCategorias,
     private val repositorioProductos: RepositorioProductos,
@@ -32,6 +43,9 @@ class BusquedaViewModel(
 
     private val _estado = MutableStateFlow<EstadoBusqueda>(EstadoBusqueda.CargandoCategorias)
     val estado: StateFlow<EstadoBusqueda> = _estado.asStateFlow()
+
+    private val _estadoResultados = MutableStateFlow<EstadoResultadosBusqueda>(EstadoResultadosBusqueda.Inicial)
+    val estadoResultados: StateFlow<EstadoResultadosBusqueda> = _estadoResultados.asStateFlow()
 
     private var trabajoBusqueda: Job? = null
     private var categoriasCargadas: List<Categoria> = emptyList()
@@ -73,7 +87,7 @@ class BusquedaViewModel(
         }
 
         trabajoBusqueda = viewModelScope.launch {
-            delay(300) // 300 ms de espera tras la última letra
+            delay(300)
             when (val resultado = repositorioProductos.buscar(nombre = texto, idCategoria = null)) {
                 is Resultado.Exito -> {
                     val sugerenciasUnicas = resultado.datos
@@ -89,8 +103,40 @@ class BusquedaViewModel(
                 is Resultado.Error -> {
                     _estado.value = EstadoBusqueda.Error(resultado.mensaje)
                 }
+                is Resultado.Cargando -> {}
+            }
+        }
+    }
+
+    fun buscarResultados(nombre: String?, idCategoria: Int?, terminoMostrar: String) {
+        viewModelScope.launch {
+            _estadoResultados.value = EstadoResultadosBusqueda.Cargando
+            val catId = if (idCategoria == null || idCategoria == -1) null else idCategoria
+            val nom = if (nombre.isNullOrBlank()) null else nombre.trim()
+
+            when (val resultado = repositorioProductos.buscar(nombre = nom, idCategoria = catId)) {
+                is Resultado.Exito -> {
+                    val listaProductos = resultado.datos
+                    if (listaProductos.isEmpty()) {
+                        _estadoResultados.value = EstadoResultadosBusqueda.SinResultados("No hay puestos con ese producto")
+                    } else {
+                        val productosPorPuesto = listaProductos
+                            .groupBy { it.idPuesto }
+                            .mapNotNull { (_, productosPuesto) ->
+                                productosPuesto.minByOrNull { it.precio }
+                            }
+
+                        _estadoResultados.value = EstadoResultadosBusqueda.Exito(
+                            terminoBuscado = terminoMostrar,
+                            productosAgrupados = productosPorPuesto
+                        )
+                    }
+                }
+                is Resultado.Error -> {
+                    _estadoResultados.value = EstadoResultadosBusqueda.Error(resultado.mensaje)
+                }
                 is Resultado.Cargando -> {
-                    // Mantener el estado actual
+                    _estadoResultados.value = EstadoResultadosBusqueda.Cargando
                 }
             }
         }
@@ -105,5 +151,9 @@ class BusquedaViewModel(
                 )
             )
         }
+    }
+
+    fun limpiarResultados() {
+        _estadoResultados.value = EstadoResultadosBusqueda.Inicial
     }
 }

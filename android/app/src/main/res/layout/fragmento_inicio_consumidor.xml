@@ -60,9 +60,10 @@
 
                     <EditText
                         android:id="@+id/etBuscarProducto"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
+                        android:layout_weight="1"
                         android:background="@null"
                         android:hint="@string/buscar_producto"
                         android:imeOptions="actionSearch"
@@ -71,6 +72,15 @@
                         android:singleLine="true"
                         android:textColor="@color/color_texto"
                         android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnLimpiarBusqueda"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/descripcion_limpiar_busqueda"
+                        android:src="@drawable/ic_limpiar_texto"
+                        android:visibility="gone" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
@@ -183,7 +193,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- TARJETA PUESTO SELECCIONADO (OVERLAY) -->
+        <!-- TARJETA RESULTADO / DETALLE RÁPIDO PUESTO (OVERLAY) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/tarjetaPuesto"
             android:layout_width="0dp"
@@ -218,21 +228,32 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/tvNombrePuesto"
+                        android:id="@+id/tvNombreProductoTarjeta"
                         style="@style/estilo_titulo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
-                        tools:text="Puesto N° 45" />
+                        tools:text="Ropa de Varón" />
 
                     <TextView
-                        android:id="@+id/tvNombreComerciante"
+                        android:id="@+id/tvPrecioProductoTarjeta"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textColor="@color/color_texto"
                         android:textSize="14sp"
-                        tools:text="Comercial Doña Maria" />
+                        tools:text="Precio: 50 Bs" />
+
+                    <Button
+                        android:id="@+id/btnVerMas"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:padding="0dp"
+                        android:text="@string/ver_mas"
+                        android:textColor="@color/color_primario"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <ImageButton

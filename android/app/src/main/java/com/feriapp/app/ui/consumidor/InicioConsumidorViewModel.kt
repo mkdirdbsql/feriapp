@@ -10,6 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+data class CamaraMapa(
+    val latitud: Double,
+    val longitud: Double,
+    val zoom: Double
+)
+
 sealed class EstadoInicioConsumidor {
     data object Cargando : EstadoInicioConsumidor()
     data class Exito(val puestos: List<Puesto>) : EstadoInicioConsumidor()
@@ -22,6 +28,10 @@ class InicioConsumidorViewModel(
 
     private val _estado = MutableStateFlow<EstadoInicioConsumidor>(EstadoInicioConsumidor.Cargando)
     val estado: StateFlow<EstadoInicioConsumidor> = _estado.asStateFlow()
+
+    var camaraAntesDeBuscar: CamaraMapa? = null
+    var camaraAlSalir: CamaraMapa? = null
+    var busquedaNuevaRealizada: Boolean = false
 
     init {
         cargarPuestos()

@@ -34,10 +34,13 @@ import com.feriapp.app.data.model.ProductoBuscado
 import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoInicioConsumidorBinding
 import com.feriapp.app.ui.common.FragmentoMapa
+import com.feriapp.app.ui.common.MarcadorMapa
 import com.feriapp.app.ui.common.fabricaViewModel
 import com.feriapp.app.util.construirUrlImagen
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
+import java.util.Locale
 
 class FragmentoInicioConsumidor : Fragment() {
 
@@ -61,7 +64,11 @@ class FragmentoInicioConsumidor : Fragment() {
     private var fragmentoMapa: FragmentoMapa? = null
     private var listaPuestosCargados: List<Puesto> = emptyList()
     private var modoBusquedaActivo = false
-    private var navegandoAResultados = false
+    private var modoResultadosActivo = false
+    private var navegandoADetalle = false
+
+    private var puestoNormalSeleccionado: Puesto? = null
+    private var productoResultadoSeleccionado: ProductoBuscado? = null
 
     private lateinit var adaptadorSugerencias: AdaptadorSugerencias
 
@@ -97,21 +104,47 @@ class FragmentoInicioConsumidor : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        navegandoAResultados = false
-        if (modoBusquedaActivo) {
+        if (modoBusquedaActivo && !navegandoADetalle) {
             desactivarModoBusqueda()
         }
-        configurarEnfoqueInicial()
 
-        when (val estadoActual = viewModel.estado.value) {
-            is EstadoInicioConsumidor.Exito -> {
-                listaPuestosCargados = estadoActual.puestos
-                fragmentoMapa?.mostrarMarcadores(estadoActual.puestos)
+        if (viewModel.camaraAlSalir != null) {
+            val camara = viewModel.camaraAlSalir!!
+            fragmentoMapa?.ejecutarCuandoEsteListo {
+                fragmentoMapa?.fijarCamaraDirecta(camara.latitud, camara.longitud, camara.zoom)
             }
-            is EstadoInicioConsumidor.Error -> {
-                viewModel.cargarPuestos()
+        }
+
+        if (!modoResultadosActivo) {
+            configurarEnfoqueInicial()
+            if (puestoNormalSeleccionado != null) {
+                mostrarDetallePuesto(puestoNormalSeleccionado!!)
             }
-            else -> {}
+        } else if (productoResultadoSeleccionado != null) {
+            mostrarDetalleResultado(productoResultadoSeleccionado!!)
+        }
+        navegandoADetalle = false
+
+        if (!modoResultadosActivo) {
+            when (val estadoActual = viewModel.estado.value) {
+                is EstadoInicioConsumidor.Exito -> {
+                    listaPuestosCargados = estadoActual.puestos
+                    fragmentoMapa?.mostrarMarcadoresPuestos(estadoActual.puestos)
+                }
+                is EstadoInicioConsumidor.Error -> {
+                    viewModel.cargarPuestos()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val centro = fragmentoMapa?.obtenerCentroActual()
+        val zoom = fragmentoMapa?.obtenerZoomActual()
+        if (centro != null && zoom != null) {
+            viewModel.camaraAlSalir = CamaraMapa(centro.latitude, centro.longitude, zoom)
         }
     }
 
@@ -119,15 +152,19 @@ class FragmentoInicioConsumidor : Fragment() {
         binding.btnMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
+
+        binding.btnLimpiarBusqueda.setOnClickListener {
+            desactivarModoResultados()
+        }
     }
 
     private fun configurarModoBusqueda() {
         adaptadorSugerencias = AdaptadorSugerencias { producto ->
-            navegandoAResultados = true
-            busquedaViewModel.registrarBusqueda(producto.nombreProducto, producto.idCategoria)
-            val bundle = bundleOf("nombre" to producto.nombreProducto, "idCategoria" to producto.idCategoria)
-            desactivarModoBusqueda()
-            findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+            ejecutarBusquedaResultados(
+                nombre = producto.nombreProducto,
+                idCategoria = producto.idCategoria,
+                terminoMostrar = producto.nombreProducto
+            )
         }
         binding.rvSugerencias.adapter = adaptadorSugerencias
 
@@ -168,11 +205,11 @@ class FragmentoInicioConsumidor : Fragment() {
                 if (texto.isEmpty()) {
                     Toast.makeText(requireContext(), R.string.escribe_algo_buscar, Toast.LENGTH_SHORT).show()
                 } else {
-                    navegandoAResultados = true
-                    busquedaViewModel.registrarBusqueda(texto, null)
-                    val bundle = bundleOf("nombre" to texto, "idCategoria" to -1)
-                    desactivarModoBusqueda()
-                    findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+                    ejecutarBusquedaResultados(
+                        nombre = texto,
+                        idCategoria = -1,
+                        terminoMostrar = texto
+                    )
                 }
                 true
             } else {
@@ -184,6 +221,10 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun activarModoBusqueda() {
         if (modoBusquedaActivo) return
         modoBusquedaActivo = true
+
+        binding.tarjetaPuesto.visibility = View.GONE
+        puestoNormalSeleccionado = null
+        productoResultadoSeleccionado = null
 
         binding.btnVolverBusqueda.visibility = View.VISIBLE
         binding.capaOscuraBusqueda.visibility = View.VISIBLE
@@ -201,7 +242,9 @@ class FragmentoInicioConsumidor : Fragment() {
 
         ocultarTeclado()
         binding.etBuscarProducto.clearFocus()
-        binding.etBuscarProducto.setText("")
+        if (!modoResultadosActivo) {
+            binding.etBuscarProducto.setText("")
+        }
         binding.contenedorPrincipal.requestFocus()
 
         binding.btnVolverBusqueda.visibility = View.GONE
@@ -213,19 +256,48 @@ class FragmentoInicioConsumidor : Fragment() {
         binding.barraInferior.visibility = View.VISIBLE
     }
 
-    private fun configurarObservadorTecladoEInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-            val tecladoVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-
-            // Ocultar barra inferior por completo cuando el teclado esté visible
-            binding.barraInferior.visibility = if (tecladoVisible) View.GONE else View.VISIBLE
-
-            // Si el teclado se oculta mientras el modo búsqueda está activo (y no estamos navegando), desactivar el modo búsqueda
-            if (!tecladoVisible && modoBusquedaActivo && !navegandoAResultados) {
-                desactivarModoBusqueda()
+    private fun ejecutarBusquedaResultados(nombre: String?, idCategoria: Int?, terminoMostrar: String) {
+        if (!modoResultadosActivo) {
+            val centro = fragmentoMapa?.obtenerCentroActual()
+            val zoom = fragmentoMapa?.obtenerZoomActual()
+            if (centro != null && zoom != null) {
+                viewModel.camaraAntesDeBuscar = CamaraMapa(centro.latitude, centro.longitude, zoom)
             }
-            insets
         }
+        viewModel.busquedaNuevaRealizada = true
+
+        busquedaViewModel.registrarBusqueda(terminoMostrar, idCategoria)
+        desactivarModoBusqueda()
+
+        binding.etBuscarProducto.setText(terminoMostrar)
+        binding.etBuscarProducto.clearFocus()
+        binding.btnLimpiarBusqueda.visibility = View.VISIBLE
+
+        modoResultadosActivo = true
+        busquedaViewModel.buscarResultados(nombre, idCategoria, terminoMostrar)
+    }
+
+    private fun desactivarModoResultados() {
+        modoResultadosActivo = false
+        productoResultadoSeleccionado = null
+        puestoNormalSeleccionado = null
+        busquedaViewModel.limpiarResultados()
+
+        binding.btnLimpiarBusqueda.visibility = View.GONE
+        binding.etBuscarProducto.setText("")
+        binding.tarjetaPuesto.visibility = View.GONE
+
+        fragmentoMapa?.mostrarMarcadoresPuestos(listaPuestosCargados)
+
+        val camara = viewModel.camaraAntesDeBuscar
+        if (camara != null) {
+            fragmentoMapa?.restaurarCentroYZoom(
+                GeoPoint(camara.latitud, camara.longitud),
+                camara.zoom
+            )
+            viewModel.camaraAntesDeBuscar = null
+        }
+        viewModel.camaraAlSalir = null
     }
 
     private fun mostrarTeclado(view: View) {
@@ -250,11 +322,11 @@ class FragmentoInicioConsumidor : Fragment() {
                 isCheckable = false
                 isClickable = true
                 setOnClickListener {
-                    navegandoAResultados = true
-                    busquedaViewModel.registrarBusqueda(categoria.nombreCategoria, categoria.idCategoria)
-                    val bundle = bundleOf("nombre" to "", "idCategoria" to categoria.idCategoria)
-                    desactivarModoBusqueda()
-                    findNavController().navigate(R.id.accionInicioConsumidorAResultados, bundle)
+                    ejecutarBusquedaResultados(
+                        nombre = "",
+                        idCategoria = categoria.idCategoria,
+                        terminoMostrar = categoria.nombreCategoria
+                    )
                 }
             }
             binding.chipGroupCategorias.addView(chip)
@@ -335,22 +407,51 @@ class FragmentoInicioConsumidor : Fragment() {
     }
 
     private fun configurarTarjetaPuesto() {
-        fragmentoMapa?.alSeleccionarMarcador = { idPuesto ->
-            val puesto = listaPuestosCargados.find { it.idPuesto == idPuesto }
-            if (puesto != null) {
-                mostrarDetallePuesto(puesto)
+        fragmentoMapa?.alSeleccionarMarcador = { id, datos ->
+            if (id == -1) {
+                binding.tarjetaPuesto.visibility = View.GONE
+                puestoNormalSeleccionado = null
+                productoResultadoSeleccionado = null
+            } else if (modoResultadosActivo && datos is ProductoBuscado) {
+                puestoNormalSeleccionado = null
+                mostrarDetalleResultado(datos)
+            } else {
+                productoResultadoSeleccionado = null
+                val puesto = listaPuestosCargados.find { it.idPuesto == id }
+                if (puesto != null) {
+                    mostrarDetallePuesto(puesto)
+                }
             }
         }
 
         binding.btnCerrarTarjeta.setOnClickListener {
             binding.tarjetaPuesto.visibility = View.GONE
+            puestoNormalSeleccionado = null
+            productoResultadoSeleccionado = null
         }
     }
 
     private fun mostrarDetallePuesto(puesto: Puesto) {
+        puestoNormalSeleccionado = puesto
         with(binding) {
-            tvNombrePuesto.text = puesto.nombrePuesto
-            tvNombreComerciante.text = puesto.nombreComercial
+            tvNombreProductoTarjeta.text = puesto.nombrePuesto
+            tvPrecioProductoTarjeta.visibility = View.GONE
+
+            btnVerMas.visibility = View.VISIBLE
+            btnVerMas.setOnClickListener {
+                navegandoADetalle = true
+                val centro = fragmentoMapa?.obtenerCentroActual()
+                val zoom = fragmentoMapa?.obtenerZoomActual()
+                if (centro != null && zoom != null) {
+                    viewModel.camaraAlSalir = CamaraMapa(centro.latitude, centro.longitude, zoom)
+                }
+                val bundle = bundleOf(
+                    "idProducto" to -1,
+                    "idPuesto" to puesto.idPuesto
+                )
+                findNavController().navigate(R.id.accionInicioConsumidorADetalleProducto, bundle)
+            }
+
             tarjetaPuesto.visibility = View.VISIBLE
 
             val urlImagen = construirUrlImagen(puesto.imagenUrl)
@@ -359,6 +460,64 @@ class FragmentoInicioConsumidor : Fragment() {
                 .placeholder(R.drawable.ic_puesto_placeholder)
                 .error(R.drawable.ic_puesto_placeholder)
                 .into(imgPuesto)
+        }
+    }
+
+    private fun mostrarDetalleResultado(producto: ProductoBuscado) {
+        productoResultadoSeleccionado = producto
+        with(binding) {
+            tvNombreProductoTarjeta.text = producto.nombreProducto
+
+            tvPrecioProductoTarjeta.visibility = View.VISIBLE
+            if (producto.disponible) {
+                val precioTexto = if (producto.precio % 1.0 == 0.0) {
+                    producto.precio.toInt().toString()
+                } else {
+                    String.format(Locale.getDefault(), "%.2f", producto.precio)
+                }
+                tvPrecioProductoTarjeta.text = getString(R.string.precio_formato, precioTexto)
+                tvPrecioProductoTarjeta.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_texto))
+            } else {
+                tvPrecioProductoTarjeta.text = getString(R.string.no_disponible)
+                tvPrecioProductoTarjeta.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            }
+
+            btnVerMas.visibility = View.VISIBLE
+            btnVerMas.setOnClickListener {
+                navegandoADetalle = true
+                val centro = fragmentoMapa?.obtenerCentroActual()
+                val zoom = fragmentoMapa?.obtenerZoomActual()
+                if (centro != null && zoom != null) {
+                    viewModel.camaraAlSalir = CamaraMapa(centro.latitude, centro.longitude, zoom)
+                }
+                val bundle = bundleOf(
+                    "idProducto" to producto.idProducto,
+                    "idPuesto" to producto.idPuesto
+                )
+                findNavController().navigate(R.id.accionInicioConsumidorADetalleProducto, bundle)
+            }
+
+            tarjetaPuesto.visibility = View.VISIBLE
+
+            val urlImagen = construirUrlImagen(producto.imagenPuestoUrl)
+            Glide.with(this@FragmentoInicioConsumidor)
+                .load(urlImagen)
+                .placeholder(R.drawable.ic_puesto_placeholder)
+                .error(R.drawable.ic_puesto_placeholder)
+                .into(imgPuesto)
+        }
+    }
+
+    private fun configurarObservadorTecladoEInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val tecladoVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+
+            binding.barraInferior.visibility = if (tecladoVisible) View.GONE else View.VISIBLE
+
+            if (!tecladoVisible && modoBusquedaActivo) {
+                desactivarModoBusqueda()
+            }
+            insets
         }
     }
 
@@ -373,6 +532,10 @@ class FragmentoInicioConsumidor : Fragment() {
                         desactivarModoBusqueda()
                     } else if (binding.tarjetaPuesto.visibility == View.VISIBLE) {
                         binding.tarjetaPuesto.visibility = View.GONE
+                        puestoNormalSeleccionado = null
+                        productoResultadoSeleccionado = null
+                    } else if (modoResultadosActivo) {
+                        desactivarModoResultados()
                     } else {
                         isEnabled = false
                         requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -393,7 +556,9 @@ class FragmentoInicioConsumidor : Fragment() {
                         is EstadoInicioConsumidor.Exito -> {
                             binding.indicadorCargandoPuestos.visibility = View.GONE
                             listaPuestosCargados = estado.puestos
-                            fragmentoMapa?.mostrarMarcadores(estado.puestos)
+                            if (!modoResultadosActivo) {
+                                fragmentoMapa?.mostrarMarcadoresPuestos(estado.puestos)
+                            }
                         }
                         is EstadoInicioConsumidor.Error -> {
                             binding.indicadorCargandoPuestos.visibility = View.GONE
@@ -421,6 +586,47 @@ class FragmentoInicioConsumidor : Fragment() {
                         }
                         is EstadoBusqueda.Error -> {
                             Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                busquedaViewModel.estadoResultados.collect { estado ->
+                    when (estado) {
+                        is EstadoResultadosBusqueda.Inicial -> {}
+                        is EstadoResultadosBusqueda.Cargando -> {
+                            binding.indicadorCargandoPuestos.visibility = View.VISIBLE
+                        }
+                        is EstadoResultadosBusqueda.Exito -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            val marcadores = estado.productosAgrupados.map { producto ->
+                                MarcadorMapa(
+                                    id = producto.idPuesto,
+                                    latitud = producto.latitud,
+                                    longitud = producto.longitud,
+                                    titulo = producto.nombrePuesto,
+                                    subtitulo = producto.nombreComercial,
+                                    datosOriginales = producto
+                                )
+                            }
+                            fragmentoMapa?.mostrarMarcadores(marcadores)
+                            if (viewModel.busquedaNuevaRealizada) {
+                                viewModel.busquedaNuevaRealizada = false
+                                fragmentoMapa?.centrarEnMarcadores(marcadores)
+                            }
+                        }
+                        is EstadoResultadosBusqueda.SinResultados -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            Toast.makeText(requireContext(), R.string.no_hay_puestos_producto, Toast.LENGTH_SHORT).show()
+                            desactivarModoResultados()
+                        }
+                        is EstadoResultadosBusqueda.Error -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                            desactivarModoResultados()
                         }
                     }
                 }

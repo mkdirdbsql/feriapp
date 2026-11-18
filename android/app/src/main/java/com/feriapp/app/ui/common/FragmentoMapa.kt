@@ -13,10 +13,20 @@ import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoMapaBinding
 import com.feriapp.app.util.LimitesFeria
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+
+data class MarcadorMapa(
+    val id: Int,
+    val latitud: Double,
+    val longitud: Double,
+    val titulo: String,
+    val subtitulo: String? = null,
+    val datosOriginales: Any? = null
+)
 
 class FragmentoMapa : Fragment() {
 
@@ -24,13 +34,13 @@ class FragmentoMapa : Fragment() {
     private val binding get() = _binding!!
 
     private var capaUbicacion: MyLocationNewOverlay? = null
-    private val marcadoresPuestos = mutableListOf<Marker>()
+    private val marcadoresMapa = mutableListOf<Marker>()
 
-    private var ultimaListaPuestos: List<Puesto>? = null
+    private var ultimaListaMarcadores: List<MarcadorMapa>? = null
     private var ultimoCentro: GeoPoint? = null
     private var ultimoZoom: Double? = null
 
-    var alSeleccionarMarcador: ((idPuesto: Int) -> Unit)? = null
+    var alSeleccionarMarcador: ((id: Int, datos: Any?) -> Unit)? = null
     private var callbackUbicacion: ((Boolean) -> Unit)? = null
 
     private val lanzadorPermisoUbicacion = registerForActivityResult(
@@ -66,17 +76,55 @@ class FragmentoMapa : Fragment() {
             setMultiTouchControls(true)
             setBuiltInZoomControls(false)
             setScrollableAreaLimitDouble(LimitesFeria.cajaLimites)
-            minZoomLevel = 13.0
-            maxZoomLevel = 19.0
+            minZoomLevel = 14.0
+            maxZoomLevel = 20.0
             controller.setZoom(ultimoZoom ?: 16.0)
             val puntoInicial = ultimoCentro ?: GeoPoint(-16.494905, -68.173642)
             controller.setCenter(puntoInicial)
+
+            setOnClickListener {
+                alSeleccionarMarcador?.invoke(-1, null)
+            }
         }
     }
 
     private fun restaurarEstadoMapa() {
-        if (ultimaListaPuestos != null) {
+        if (ultimaListaMarcadores != null) {
             dibujarMarcadoresInterno()
+        }
+    }
+
+    fun obtenerCentroActual(): GeoPoint? = _binding?.mapaFeria?.mapCenter as? GeoPoint
+
+    fun obtenerZoomActual(): Double? = _binding?.mapaFeria?.zoomLevelDouble
+
+    fun fijarCamaraDirecta(latitud: Double, longitud: Double, zoom: Double) {
+        val mapa = _binding?.mapaFeria ?: return
+        val punto = GeoPoint(latitud, longitud)
+        ultimoCentro = punto
+        ultimoZoom = zoom
+        mapa.controller.setZoom(zoom)
+        mapa.controller.setCenter(punto)
+    }
+
+    fun ejecutarCuandoEsteListo(accion: () -> Unit) {
+        val mapa = _binding?.mapaFeria
+        if (mapa != null && mapa.isLayoutOccurred && mapa.width > 0 && mapa.height > 0) {
+            accion()
+        } else if (mapa != null) {
+            mapa.addOnFirstLayoutListener { _, _, _, _, _ ->
+                accion()
+            }
+        }
+    }
+
+    fun restaurarCentroYZoom(centro: GeoPoint?, zoom: Double?) {
+        val mapa = _binding?.mapaFeria ?: return
+        if (zoom != null) {
+            mapa.controller.setZoom(zoom)
+        }
+        if (centro != null) {
+            mapa.controller.animateTo(centro)
         }
     }
 
@@ -165,49 +213,92 @@ class FragmentoMapa : Fragment() {
         mapa.controller.animateTo(punto)
     }
 
-    fun mostrarMarcadores(puestos: List<Puesto>) {
-        ultimaListaPuestos = puestos
+    fun mostrarMarcadoresPuestos(puestos: List<Puesto>) {
+        val marcadores = puestos.map {
+            MarcadorMapa(
+                id = it.idPuesto,
+                latitud = it.latitud,
+                longitud = it.longitud,
+                titulo = it.nombrePuesto,
+                subtitulo = it.nombreComercial,
+                datosOriginales = it
+            )
+        }
+        mostrarMarcadores(marcadores)
+    }
+
+    fun mostrarMarcadores(marcadores: List<MarcadorMapa>) {
+        ultimaListaMarcadores = marcadores
         if (_binding != null) {
             dibujarMarcadoresInterno()
         }
     }
 
+    fun centrarEnMarcadores(marcadores: List<MarcadorMapa>) {
+        val mapa = _binding?.mapaFeria ?: return
+        if (marcadores.isEmpty()) return
+
+        var minLat = 90.0
+        var maxLat = -90.0
+        var minLng = 180.0
+        var maxLng = -180.0
+
+        marcadores.forEach { m ->
+            if (m.latitud < minLat) minLat = m.latitud
+            if (m.latitud > maxLat) maxLat = m.latitud
+            if (m.longitud < minLng) minLng = m.longitud
+            if (m.longitud > maxLng) maxLng = m.longitud
+        }
+
+        val latPadding = (maxLat - minLat).coerceAtLeast(0.002) * 0.2
+        val lngPadding = (maxLng - minLng).coerceAtLeast(0.002) * 0.2
+
+        val box = BoundingBox(
+            (maxLat + latPadding).coerceAtMost(LimitesFeria.LATITUD_MAXIMA),
+            (maxLng + lngPadding).coerceAtMost(LimitesFeria.LONGITUD_MAXIMA),
+            (minLat - latPadding).coerceAtLeast(LimitesFeria.LATITUD_MINIMA),
+            (minLng - lngPadding).coerceAtLeast(LimitesFeria.LONGITUD_MINIMA)
+        )
+
+        mapa.zoomToBoundingBox(box, true)
+    }
+
     private fun dibujarMarcadoresInterno() {
         val mapa = _binding?.mapaFeria ?: return
-        val puestos = ultimaListaPuestos ?: return
+        val marcadores = ultimaListaMarcadores ?: return
 
-        marcadoresPuestos.forEach { mapa.overlays.remove(it) }
-        marcadoresPuestos.clear()
+        marcadoresMapa.forEach { mapa.overlays.remove(it) }
+        marcadoresMapa.clear()
 
-        puestos.forEach { puesto ->
+        marcadores.forEach { m ->
             val marcador = Marker(mapa).apply {
-                position = GeoPoint(puesto.latitud, puesto.longitud)
-                title = puesto.nombrePuesto
-                snippet = puesto.nombreComercial
-                id = puesto.idPuesto.toString()
+                position = GeoPoint(m.latitud, m.longitud)
+                title = m.titulo
+                snippet = m.subtitulo
+                id = m.id.toString()
                 setOnMarkerClickListener { _, _ ->
-                    alSeleccionarMarcador?.invoke(puesto.idPuesto)
+                    alSeleccionarMarcador?.invoke(m.id, m.datosOriginales)
                     true
                 }
             }
-            marcadoresPuestos.add(marcador)
+            marcadoresMapa.add(marcador)
             mapa.overlays.add(marcador)
         }
         mapa.invalidate()
     }
 
     fun limpiarMarcadores() {
-        ultimaListaPuestos = null
+        ultimaListaMarcadores = null
         val mapa = _binding?.mapaFeria ?: return
-        marcadoresPuestos.forEach { mapa.overlays.remove(it) }
-        marcadoresPuestos.clear()
+        marcadoresMapa.forEach { mapa.overlays.remove(it) }
+        marcadoresMapa.clear()
         mapa.invalidate()
     }
 
     override fun onResume() {
         super.onResume()
         _binding?.mapaFeria?.onResume()
-        if (ultimaListaPuestos != null) {
+        if (ultimaListaMarcadores != null) {
             dibujarMarcadoresInterno()
         }
     }

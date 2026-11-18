@@ -47,4 +47,10 @@
     <string name="sin_coincidencias_busqueda">No encontramos productos con ese nombre</string>
     <string name="escribe_algo_buscar">Escribe algo para buscar</string>
     <string name="descripcion_volver">Volver</string>
+    <string name="no_hay_puestos_producto">No hay puestos con ese producto</string>
+    <string name="precio_formato">Precio: %s Bs</string>
+    <string name="no_disponible">No disponible</string>
+    <string name="ver_mas">ver más</string>
+    <string name="descripcion_limpiar_busqueda">Limpiar búsqueda</string>
+    <string name="titulo_detalle_producto">Fragmento Detalle Producto</string>
 </resources>
