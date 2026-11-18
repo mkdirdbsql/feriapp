@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -17,9 +18,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.feriapp.app.AplicacionFeria
@@ -56,6 +61,7 @@ class FragmentoInicioConsumidor : Fragment() {
     private var fragmentoMapa: FragmentoMapa? = null
     private var listaPuestosCargados: List<Puesto> = emptyList()
     private var modoBusquedaActivo = false
+    private var navegandoAResultados = false
 
     private lateinit var adaptadorSugerencias: AdaptadorSugerencias
 
@@ -73,13 +79,40 @@ class FragmentoInicioConsumidor : Fragment() {
 
         fragmentoMapa = childFragmentManager.findFragmentById(R.id.contenedorMapa) as? FragmentoMapa
 
+        configurarEnfoqueInicial()
         configurarNavegacion()
         configurarControlesUbicacion()
         configurarControlesZoom()
         configurarTarjetaPuesto()
         configurarModoBusqueda()
+        configurarObservadorTecladoEInsets()
         configurarBotonAtras()
         observarEstadoViewModel()
+    }
+
+    private fun configurarEnfoqueInicial() {
+        binding.contenedorPrincipal.requestFocus()
+        binding.etBuscarProducto.clearFocus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        navegandoAResultados = false
+        if (modoBusquedaActivo) {
+            desactivarModoBusqueda()
+        }
+        configurarEnfoqueInicial()
+
+        when (val estadoActual = viewModel.estado.value) {
+            is EstadoInicioConsumidor.Exito -> {
+                listaPuestosCargados = estadoActual.puestos
+                fragmentoMapa?.mostrarMarcadores(estadoActual.puestos)
+            }
+            is EstadoInicioConsumidor.Error -> {
+                viewModel.cargarPuestos()
+            }
+            else -> {}
+        }
     }
 
     private fun configurarNavegacion() {
@@ -90,6 +123,7 @@ class FragmentoInicioConsumidor : Fragment() {
 
     private fun configurarModoBusqueda() {
         adaptadorSugerencias = AdaptadorSugerencias { producto ->
+            navegandoAResultados = true
             busquedaViewModel.registrarBusqueda(producto.nombreProducto, producto.idCategoria)
             val bundle = bundleOf("nombre" to producto.nombreProducto, "idCategoria" to producto.idCategoria)
             desactivarModoBusqueda()
@@ -97,17 +131,23 @@ class FragmentoInicioConsumidor : Fragment() {
         }
         binding.rvSugerencias.adapter = adaptadorSugerencias
 
-        binding.etBuscarProducto.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                activarModoBusqueda()
-            }
-        }
-
         binding.etBuscarProducto.setOnClickListener {
             activarModoBusqueda()
         }
 
+        binding.etBuscarProducto.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                v.performClick()
+                activarModoBusqueda()
+            }
+            false
+        }
+
         binding.btnVolverBusqueda.setOnClickListener {
+            desactivarModoBusqueda()
+        }
+
+        binding.capaOscuraBusqueda.setOnClickListener {
             desactivarModoBusqueda()
         }
 
@@ -128,6 +168,7 @@ class FragmentoInicioConsumidor : Fragment() {
                 if (texto.isEmpty()) {
                     Toast.makeText(requireContext(), R.string.escribe_algo_buscar, Toast.LENGTH_SHORT).show()
                 } else {
+                    navegandoAResultados = true
                     busquedaViewModel.registrarBusqueda(texto, null)
                     val bundle = bundleOf("nombre" to texto, "idCategoria" to -1)
                     desactivarModoBusqueda()
@@ -161,6 +202,7 @@ class FragmentoInicioConsumidor : Fragment() {
         ocultarTeclado()
         binding.etBuscarProducto.clearFocus()
         binding.etBuscarProducto.setText("")
+        binding.contenedorPrincipal.requestFocus()
 
         binding.btnVolverBusqueda.visibility = View.GONE
         binding.capaOscuraBusqueda.visibility = View.GONE
@@ -168,6 +210,22 @@ class FragmentoInicioConsumidor : Fragment() {
         binding.contenedorSugerencias.visibility = View.GONE
         binding.tvSinCoincidencias.visibility = View.GONE
         binding.contenedorCategorias.visibility = View.VISIBLE
+        binding.barraInferior.visibility = View.VISIBLE
+    }
+
+    private fun configurarObservadorTecladoEInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val tecladoVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+
+            // Ocultar barra inferior por completo cuando el teclado esté visible
+            binding.barraInferior.visibility = if (tecladoVisible) View.GONE else View.VISIBLE
+
+            // Si el teclado se oculta mientras el modo búsqueda está activo (y no estamos navegando), desactivar el modo búsqueda
+            if (!tecladoVisible && modoBusquedaActivo && !navegandoAResultados) {
+                desactivarModoBusqueda()
+            }
+            insets
+        }
     }
 
     private fun mostrarTeclado(view: View) {
@@ -192,6 +250,7 @@ class FragmentoInicioConsumidor : Fragment() {
                 isCheckable = false
                 isClickable = true
                 setOnClickListener {
+                    navegandoAResultados = true
                     busquedaViewModel.registrarBusqueda(categoria.nombreCategoria, categoria.idCategoria)
                     val bundle = bundleOf("nombre" to "", "idCategoria" to categoria.idCategoria)
                     desactivarModoBusqueda()
@@ -325,42 +384,44 @@ class FragmentoInicioConsumidor : Fragment() {
 
     private fun observarEstadoViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.estado.collect { estado ->
-                when (estado) {
-                    is EstadoInicioConsumidor.Cargando -> {
-                        binding.indicadorCargandoPuestos.visibility = View.VISIBLE
-                    }
-                    is EstadoInicioConsumidor.Exito -> {
-                        binding.indicadorCargandoPuestos.visibility = View.GONE
-                        listaPuestosCargados = estado.puestos
-                        fragmentoMapa?.mostrarMarcadores(estado.puestos)
-                    }
-                    is EstadoInicioConsumidor.Error -> {
-                        binding.indicadorCargandoPuestos.visibility = View.GONE
-                        Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.estado.collect { estado ->
+                    when (estado) {
+                        is EstadoInicioConsumidor.Cargando -> {
+                            binding.indicadorCargandoPuestos.visibility = View.VISIBLE
+                        }
+                        is EstadoInicioConsumidor.Exito -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            listaPuestosCargados = estado.puestos
+                            fragmentoMapa?.mostrarMarcadores(estado.puestos)
+                        }
+                        is EstadoInicioConsumidor.Error -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            busquedaViewModel.estado.collect { estado ->
-                when (estado) {
-                    is EstadoBusqueda.CargandoCategorias -> {
-                        // Carga silenciosa
-                    }
-                    is EstadoBusqueda.ListoCategorias -> {
-                        if (modoBusquedaActivo) {
-                            mostrarCategorias(estado.categorias)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                busquedaViewModel.estado.collect { estado ->
+                    when (estado) {
+                        is EstadoBusqueda.CargandoCategorias -> {}
+                        is EstadoBusqueda.ListoCategorias -> {
+                            if (modoBusquedaActivo) {
+                                mostrarCategorias(estado.categorias)
+                            }
                         }
-                    }
-                    is EstadoBusqueda.Sugerencias -> {
-                        if (modoBusquedaActivo) {
-                            mostrarSugerencias(estado.sugerencias, estado.sinCoincidencias)
+                        is EstadoBusqueda.Sugerencias -> {
+                            if (modoBusquedaActivo) {
+                                mostrarSugerencias(estado.sugerencias, estado.sinCoincidencias)
+                            }
                         }
-                    }
-                    is EstadoBusqueda.Error -> {
-                        Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        is EstadoBusqueda.Error -> {
+                            Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
