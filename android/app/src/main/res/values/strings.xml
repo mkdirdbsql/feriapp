@@ -53,4 +53,33 @@
     <string name="ver_mas">ver más</string>
     <string name="descripcion_limpiar_busqueda">Limpiar búsqueda</string>
     <string name="titulo_detalle_producto">Fragmento Detalle Producto</string>
+
+    <!-- MENÚ LATERAL Y MÁS INFORMACIÓN -->
+    <string name="menu_cambiar_cuenta">Cambiar cuenta</string>
+    <string name="menu_aspecto">Aspecto</string>
+    <string name="menu_mas_informacion">Más información</string>
+    <string name="menu_volver_al_inicio">Volver al Inicio</string>
+    <string name="descripcion_cerrar_menu">Cerrar menú</string>
+    <string name="descripcion_icono_aspecto">Modo oscuro</string>
+    <string name="descripcion_icono_info">Información</string>
+    <string name="titulo_cerrar_sesion">Cerrar sesión</string>
+    <string name="mensaje_cerrar_sesion">¿Deseas cerrar la sesión actual?</string>
+    <string name="btn_cerrar_sesion">Cerrar sesión</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="titulo_mas_informacion">Más información</string>
+
+    <string name="info_titulo_1">Uso de la ubicación</string>
+    <string name="info_texto_1">FeriApp usa la ubicación de tu celular solo mientras activas el interruptor Ubicación, para mostrarte dónde estás en el mapa. No guarda tu historial de ubicaciones ni te sigue fuera de la feria.</string>
+    <string name="info_titulo_2">Productos, precios y disponibilidad</string>
+    <string name="info_texto_2">Los precios, las imágenes y la disponibilidad los registran los comerciantes y pueden cambiar sin aviso. FeriApp no garantiza que un producto esté disponible ni que el precio sea el final: confírmalo con el comerciante.</string>
+    <string name="info_titulo_3">Ubicación de los puestos</string>
+    <string name="info_texto_3">Algunos puestos cambian de lugar. La posición que ves es la que el comerciante registró y puede no coincidir exactamente con la real.</string>
+    <string name="info_titulo_4">Compras</string>
+    <string name="info_texto_4">FeriApp no procesa pagos ni pedidos. La compra se hace directamente con el comerciante en la feria.</string>
+    <string name="info_titulo_5">Datos de los comerciantes</string>
+    <string name="info_texto_5">Los comerciantes registran su nombre, su teléfono y los datos de su puesto. Esta información se usa solo para mostrar el puesto en la app y administrar su cuenta.</string>
+    <string name="info_titulo_6">Uso responsable</string>
+    <string name="info_texto_6">No registres información falsa ni de otras personas. El administrador puede desactivar las cuentas que incumplan estas normas.</string>
+    <string name="info_titulo_7">Conexión</string>
+    <string name="info_texto_7">FeriApp necesita conexión a internet para mostrar puestos y productos.</string>
 </resources>

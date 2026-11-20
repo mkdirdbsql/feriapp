@@ -2,6 +2,7 @@ package com.feriapp.app.ui.common
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
@@ -82,10 +84,23 @@ class FragmentoMapa : Fragment() {
             val puntoInicial = ultimoCentro ?: GeoPoint(-16.494905, -68.173642)
             controller.setCenter(puntoInicial)
 
+            val esModoOscuro = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            aplicarModoOscuroTiles(esModoOscuro)
+
             setOnClickListener {
                 alSeleccionarMarcador?.invoke(-1, null)
             }
         }
+    }
+
+    fun aplicarModoOscuroTiles(activo: Boolean) {
+        val mapa = _binding?.mapaFeria ?: return
+        if (activo) {
+            mapa.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
+        } else {
+            mapa.overlayManager.tilesOverlay.setColorFilter(null)
+        }
+        mapa.invalidate()
     }
 
     private fun restaurarEstadoMapa() {

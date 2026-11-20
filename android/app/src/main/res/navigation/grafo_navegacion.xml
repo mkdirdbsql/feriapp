@@ -5,6 +5,21 @@
     android:id="@+id/grafo_navegacion"
     app:startDestination="@id/fragmentoCarga">
 
+    <!-- ACCIONES GLOBALES -->
+    <action
+        android:id="@+id/accionGlobalASeleccionUsuario"
+        app:destination="@id/fragmentoSeleccionUsuario" />
+
+    <action
+        android:id="@+id/accionGlobalASeleccionUsuarioLimpiandoPila"
+        app:destination="@id/fragmentoSeleccionUsuario"
+        app:popUpTo="@id/grafo_navegacion"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/accionGlobalAMasInformacion"
+        app:destination="@id/fragmentoMasInformacion" />
+
     <!-- SPLASH -->
     <fragment
         android:id="@+id/fragmentoCarga"
@@ -76,6 +91,13 @@
             android:id="@+id/accionInicioSesionARegistro"
             app:destination="@id/fragmentoRegistro" />
     </fragment>
+
+    <!-- COMMON -->
+    <fragment
+        android:id="@+id/fragmentoMasInformacion"
+        android:name="com.feriapp.app.ui.common.FragmentoMasInformacion"
+        android:label="FragmentoMasInformacion"
+        tools:layout="@layout/fragmento_mas_informacion" />
 
     <!-- CONSUMIDOR -->
     <fragment

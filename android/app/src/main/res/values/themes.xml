@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Tema base de la aplicación FeriApp basado en Material3 -->
-    <style name="Base.Theme.FeriApp" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Base.Theme.FeriApp" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/color_primario</item>
         <item name="colorOnPrimary">@color/color_fondo</item>
         <item name="colorSecondary">@color/color_secundario</item>

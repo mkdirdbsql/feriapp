@@ -1,12 +1,14 @@
 package com.feriapp.app
 
 import android.content.Context
+import com.feriapp.app.data.local.GestorPreferencias
 import com.feriapp.app.data.local.GestorSesion
 import com.feriapp.app.data.remote.ClienteApi
 import com.feriapp.app.data.repository.*
 
 class ContenedorApp(contexto: Context) {
     val gestorSesion: GestorSesion by lazy { GestorSesion(contexto) }
+    val gestorPreferencias: GestorPreferencias by lazy { GestorPreferencias(contexto) }
     val clienteApi: ClienteApi by lazy { ClienteApi(gestorSesion) }
 
     val repositorioAutenticacion: RepositorioAutenticacion by lazy {

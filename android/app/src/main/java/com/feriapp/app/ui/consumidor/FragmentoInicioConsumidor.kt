@@ -33,6 +33,7 @@ import com.feriapp.app.data.model.Categoria
 import com.feriapp.app.data.model.ProductoBuscado
 import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoInicioConsumidorBinding
+import com.feriapp.app.ui.common.ControladorMenuLateral
 import com.feriapp.app.ui.common.FragmentoMapa
 import com.feriapp.app.ui.common.MarcadorMapa
 import com.feriapp.app.ui.common.fabricaViewModel
@@ -70,6 +71,8 @@ class FragmentoInicioConsumidor : Fragment() {
     private var puestoNormalSeleccionado: Puesto? = null
     private var productoResultadoSeleccionado: ProductoBuscado? = null
 
+    private var controladorMenuLateral: ControladorMenuLateral? = null
+
     private lateinit var adaptadorSugerencias: AdaptadorSugerencias
 
     override fun onCreateView(
@@ -94,12 +97,32 @@ class FragmentoInicioConsumidor : Fragment() {
         configurarModoBusqueda()
         configurarObservadorTecladoEInsets()
         configurarBotonAtras()
+        configurarControladorMenuLateral()
         observarEstadoViewModel()
     }
 
     private fun configurarEnfoqueInicial() {
         binding.contenedorPrincipal.requestFocus()
         binding.etBuscarProducto.clearFocus()
+    }
+
+    private fun configurarControladorMenuLateral() {
+        val contenedor = (requireActivity().application as AplicacionFeria).contenedorApp
+        val bindingMenu = binding.includeMenuLateral
+
+        controladorMenuLateral = ControladorMenuLateral(
+            contexto = requireContext(),
+            drawerLayout = binding.drawerLayout,
+            bindingMenu = bindingMenu,
+            gestorSesion = contenedor.gestorSesion,
+            gestorPreferencias = contenedor.gestorPreferencias,
+            repositorioAutenticacion = contenedor.repositorioAutenticacion,
+            coroutineScope = viewLifecycleOwner.lifecycleScope,
+            navController = findNavController(),
+            alCambiarModoOscuro = { modoOscuro ->
+                fragmentoMapa?.aplicarModoOscuroTiles(modoOscuro)
+            }
+        )
     }
 
     override fun onResume() {
