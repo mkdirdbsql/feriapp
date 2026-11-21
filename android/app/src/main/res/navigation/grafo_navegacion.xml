@@ -104,26 +104,7 @@
         android:id="@+id/fragmentoInicioConsumidor"
         android:name="com.feriapp.app.ui.consumidor.FragmentoInicioConsumidor"
         android:label="FragmentoInicioConsumidor"
-        tools:layout="@layout/fragmento_inicio_consumidor">
-        <action
-            android:id="@+id/accionInicioConsumidorADetalleProducto"
-            app:destination="@id/fragmentoDetalleProducto" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/fragmentoDetalleProducto"
-        android:name="com.feriapp.app.ui.consumidor.FragmentoDetalleProducto"
-        android:label="FragmentoDetalleProducto"
-        tools:layout="@layout/fragmento_detalle_producto">
-        <argument
-            android:name="idProducto"
-            android:defaultValue="0"
-            app:argType="integer" />
-        <argument
-            android:name="idPuesto"
-            android:defaultValue="0"
-            app:argType="integer" />
-    </fragment>
+        tools:layout="@layout/fragmento_inicio_consumidor" />
 
     <!-- COMERCIANTE -->
     <fragment

@@ -7,6 +7,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,10 +17,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -37,6 +38,7 @@ import com.feriapp.app.ui.common.ControladorMenuLateral
 import com.feriapp.app.ui.common.FragmentoMapa
 import com.feriapp.app.ui.common.MarcadorMapa
 import com.feriapp.app.ui.common.fabricaViewModel
+import com.feriapp.app.util.LimitesFeria
 import com.feriapp.app.util.construirUrlImagen
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
@@ -51,7 +53,11 @@ class FragmentoInicioConsumidor : Fragment() {
     private val viewModel: InicioConsumidorViewModel by viewModels {
         fabricaViewModel {
             val contenedor = (requireActivity().application as AplicacionFeria).contenedorApp
-            InicioConsumidorViewModel(contenedor.repositorioPuestos)
+            InicioConsumidorViewModel(
+                contenedor.repositorioPuestos,
+                contenedor.repositorioProductos,
+                contenedor.repositorioRutas
+            )
         }
     }
 
@@ -66,14 +72,22 @@ class FragmentoInicioConsumidor : Fragment() {
     private var listaPuestosCargados: List<Puesto> = emptyList()
     private var modoBusquedaActivo = false
     private var modoResultadosActivo = false
-    private var navegandoADetalle = false
 
-    private var puestoNormalSeleccionado: Puesto? = null
-    private var productoResultadoSeleccionado: ProductoBuscado? = null
+    private var fotosDetalle: List<String> = emptyList()
+    private var indiceFotoActual = 0
 
     private var controladorMenuLateral: ControladorMenuLateral? = null
 
     private lateinit var adaptadorSugerencias: AdaptadorSugerencias
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        childFragmentManager.addFragmentOnAttachListener { _, fragment ->
+            if (fragment is FragmentoMapa) {
+                fragment.ubicacionDeseada = viewModel.ubicacionActiva
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -88,6 +102,7 @@ class FragmentoInicioConsumidor : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fragmentoMapa = childFragmentManager.findFragmentById(R.id.contenedorMapa) as? FragmentoMapa
+        fragmentoMapa?.ubicacionDeseada = viewModel.ubicacionActiva
 
         configurarEnfoqueInicial()
         configurarNavegacion()
@@ -95,6 +110,7 @@ class FragmentoInicioConsumidor : Fragment() {
         configurarControlesZoom()
         configurarTarjetaPuesto()
         configurarModoBusqueda()
+        configurarDetallePanel()
         configurarObservadorTecladoEInsets()
         configurarBotonAtras()
         configurarControladorMenuLateral()
@@ -109,6 +125,21 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun configurarControladorMenuLateral() {
         val contenedor = (requireActivity().application as AplicacionFeria).contenedorApp
         val bindingMenu = binding.includeMenuLateral
+
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: View) {
+                viewModel.menuAbierto = true
+            }
+            override fun onDrawerClosed(drawerView: View) {
+                viewModel.menuAbierto = false
+            }
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
+
+        if (viewModel.menuAbierto) {
+            binding.drawerLayout.openDrawer(GravityCompat.START, false)
+        }
 
         controladorMenuLateral = ControladorMenuLateral(
             contexto = requireContext(),
@@ -127,9 +158,6 @@ class FragmentoInicioConsumidor : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (modoBusquedaActivo && !navegandoADetalle) {
-            desactivarModoBusqueda()
-        }
 
         if (viewModel.camaraAlSalir != null) {
             val camara = viewModel.camaraAlSalir!!
@@ -138,17 +166,23 @@ class FragmentoInicioConsumidor : Fragment() {
             }
         }
 
-        if (!modoResultadosActivo) {
-            configurarEnfoqueInicial()
-            if (puestoNormalSeleccionado != null) {
-                mostrarDetallePuesto(puestoNormalSeleccionado!!)
+        if (viewModel.modoBusquedaActivo) {
+            activarModoBusqueda()
+        } else if (viewModel.modoResultadosActivo) {
+            modoResultadosActivo = true
+            binding.etBuscarProducto.setText(viewModel.textoBusqueda)
+            binding.btnLimpiarBusqueda.visibility = View.VISIBLE
+            if (viewModel.productoResultadoSeleccionado != null) {
+                mostrarDetalleResultado(viewModel.productoResultadoSeleccionado!!)
             }
-        } else if (productoResultadoSeleccionado != null) {
-            mostrarDetalleResultado(productoResultadoSeleccionado!!)
+        } else {
+            configurarEnfoqueInicial()
+            if (viewModel.puestoNormalSeleccionado != null) {
+                mostrarDetallePuesto(viewModel.puestoNormalSeleccionado!!)
+            }
         }
-        navegandoADetalle = false
 
-        if (!modoResultadosActivo) {
+        if (!viewModel.modoResultadosActivo) {
             when (val estadoActual = viewModel.estado.value) {
                 is EstadoInicioConsumidor.Exito -> {
                     listaPuestosCargados = estadoActual.puestos
@@ -244,10 +278,13 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun activarModoBusqueda() {
         if (modoBusquedaActivo) return
         modoBusquedaActivo = true
+        viewModel.modoBusquedaActivo = true
 
+        viewModel.limpiarRuta()
+        viewModel.cerrarDetalle()
         binding.tarjetaPuesto.visibility = View.GONE
-        puestoNormalSeleccionado = null
-        productoResultadoSeleccionado = null
+        viewModel.puestoNormalSeleccionado = null
+        viewModel.productoResultadoSeleccionado = null
 
         binding.btnVolverBusqueda.visibility = View.VISIBLE
         binding.capaOscuraBusqueda.visibility = View.VISIBLE
@@ -262,10 +299,11 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun desactivarModoBusqueda() {
         if (!modoBusquedaActivo) return
         modoBusquedaActivo = false
+        viewModel.modoBusquedaActivo = false
 
         ocultarTeclado()
         binding.etBuscarProducto.clearFocus()
-        if (!modoResultadosActivo) {
+        if (!viewModel.modoResultadosActivo) {
             binding.etBuscarProducto.setText("")
         }
         binding.contenedorPrincipal.requestFocus()
@@ -288,6 +326,8 @@ class FragmentoInicioConsumidor : Fragment() {
             }
         }
         viewModel.busquedaNuevaRealizada = true
+        viewModel.modoResultadosActivo = true
+        viewModel.textoBusqueda = terminoMostrar
 
         busquedaViewModel.registrarBusqueda(terminoMostrar, idCategoria)
         desactivarModoBusqueda()
@@ -302,8 +342,12 @@ class FragmentoInicioConsumidor : Fragment() {
 
     private fun desactivarModoResultados() {
         modoResultadosActivo = false
-        productoResultadoSeleccionado = null
-        puestoNormalSeleccionado = null
+        viewModel.modoResultadosActivo = false
+        viewModel.textoBusqueda = ""
+        viewModel.productoResultadoSeleccionado = null
+        viewModel.puestoNormalSeleccionado = null
+        viewModel.limpiarRuta()
+        viewModel.cerrarDetalle()
         busquedaViewModel.limpiarResultados()
 
         binding.btnLimpiarBusqueda.visibility = View.GONE
@@ -321,6 +365,74 @@ class FragmentoInicioConsumidor : Fragment() {
             viewModel.camaraAntesDeBuscar = null
         }
         viewModel.camaraAlSalir = null
+    }
+
+    private fun configurarDetallePanel() {
+        binding.btnCerrarDetalle.setOnClickListener {
+            viewModel.cerrarDetalle()
+        }
+
+        binding.btnFotoAnterior.setOnClickListener {
+            if (fotosDetalle.isNotEmpty()) {
+                indiceFotoActual = (indiceFotoActual - 1 + fotosDetalle.size) % fotosDetalle.size
+                mostrarFotoActual()
+            }
+        }
+
+        binding.btnFotoSiguiente.setOnClickListener {
+            if (fotosDetalle.isNotEmpty()) {
+                indiceFotoActual = (indiceFotoActual + 1) % fotosDetalle.size
+                mostrarFotoActual()
+            }
+        }
+
+        binding.btnTrazarRuta.setOnClickListener {
+            if (!binding.switchUbicacion.isChecked) {
+                Toast.makeText(requireContext(), R.string.activa_ubicacion_primero, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val miUbicacion = fragmentoMapa?.obtenerMiPosicion()
+            if (miUbicacion == null) {
+                Toast.makeText(requireContext(), R.string.aviso_sin_posicion, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val datosDetalle = (viewModel.estadoDetalle.value as? EstadoDetalle.Listo)?.datos
+            if (datosDetalle != null) {
+                val destino = GeoPoint(datosDetalle.latitud, datosDetalle.longitud)
+                viewModel.cerrarDetalle()
+                viewModel.trazarRuta(miUbicacion, destino)
+            }
+        }
+    }
+
+    private fun mostrarFotoActual() {
+        if (fotosDetalle.isEmpty()) {
+            binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
+            binding.btnFotoAnterior.visibility = View.GONE
+            binding.btnFotoSiguiente.visibility = View.GONE
+            binding.tvContadorFotos.text = getString(R.string.sin_fotos)
+            return
+        }
+
+        val total = fotosDetalle.size
+        if (total == 1) {
+            binding.btnFotoAnterior.visibility = View.GONE
+            binding.btnFotoSiguiente.visibility = View.GONE
+            binding.tvContadorFotos.text = getString(R.string.formato_contador_fotos, 1, 1)
+        } else {
+            binding.btnFotoAnterior.visibility = View.VISIBLE
+            binding.btnFotoSiguiente.visibility = View.VISIBLE
+            binding.tvContadorFotos.text = getString(R.string.formato_contador_fotos, indiceFotoActual + 1, total)
+        }
+
+        val urlImagen = construirUrlImagen(fotosDetalle[indiceFotoActual])
+        Glide.with(this)
+            .load(urlImagen)
+            .placeholder(R.drawable.ic_puesto_placeholder)
+            .error(R.drawable.ic_puesto_placeholder)
+            .into(binding.imgFotoDetalle)
     }
 
     private fun mostrarTeclado(view: View) {
@@ -371,33 +483,37 @@ class FragmentoInicioConsumidor : Fragment() {
     }
 
     private fun configurarControlesUbicacion() {
-        val tienePermisoPrevio = ContextCompat.checkSelfPermission(
-            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-            requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        binding.switchUbicacion.isChecked = tienePermisoPrevio
-        if (tienePermisoPrevio) {
-            fragmentoMapa?.activarUbicacion()
-        }
+        Log.d("FeriApp", "Restaurando switchUbicacion con viewModel.ubicacionActiva = ${viewModel.ubicacionActiva}")
+        binding.switchUbicacion.isChecked = viewModel.ubicacionActiva
 
         binding.switchUbicacion.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 if (!esGpsHabilitado()) {
+                    viewModel.ubicacionActiva = false
+                    Log.d("FeriApp", "GPS no habilitado. Guardando ubicacionActiva = false")
                     binding.switchUbicacion.isChecked = false
+                    fragmentoMapa?.ubicacionDeseada = false
                     Toast.makeText(requireContext(), R.string.aviso_gps_desactivado, Toast.LENGTH_SHORT).show()
                     return@setOnCheckedChangeListener
                 }
 
                 fragmentoMapa?.activarUbicacion { concedido ->
-                    if (!concedido) {
+                    if (concedido) {
+                        viewModel.ubicacionActiva = true
+                        Log.d("FeriApp", "Permiso concedido. Guardando ubicacionActiva = true")
+                        fragmentoMapa?.ubicacionDeseada = true
+                    } else {
+                        viewModel.ubicacionActiva = false
+                        Log.d("FeriApp", "Permiso denegado. Guardando ubicacionActiva = false")
                         binding.switchUbicacion.isChecked = false
+                        fragmentoMapa?.ubicacionDeseada = false
                         Toast.makeText(requireContext(), R.string.aviso_permiso_denegado, Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
-                fragmentoMapa?.desactivarUbicacion()
+                viewModel.ubicacionActiva = false
+                Log.d("FeriApp", "Switch apagado libremente. Guardando ubicacionActiva = false")
+                fragmentoMapa?.ubicacionDeseada = false
             }
         }
 
@@ -433,13 +549,13 @@ class FragmentoInicioConsumidor : Fragment() {
         fragmentoMapa?.alSeleccionarMarcador = { id, datos ->
             if (id == -1) {
                 binding.tarjetaPuesto.visibility = View.GONE
-                puestoNormalSeleccionado = null
-                productoResultadoSeleccionado = null
+                viewModel.puestoNormalSeleccionado = null
+                viewModel.productoResultadoSeleccionado = null
             } else if (modoResultadosActivo && datos is ProductoBuscado) {
-                puestoNormalSeleccionado = null
+                viewModel.puestoNormalSeleccionado = null
                 mostrarDetalleResultado(datos)
             } else {
-                productoResultadoSeleccionado = null
+                viewModel.productoResultadoSeleccionado = null
                 val puesto = listaPuestosCargados.find { it.idPuesto == id }
                 if (puesto != null) {
                     mostrarDetallePuesto(puesto)
@@ -449,30 +565,20 @@ class FragmentoInicioConsumidor : Fragment() {
 
         binding.btnCerrarTarjeta.setOnClickListener {
             binding.tarjetaPuesto.visibility = View.GONE
-            puestoNormalSeleccionado = null
-            productoResultadoSeleccionado = null
+            viewModel.puestoNormalSeleccionado = null
+            viewModel.productoResultadoSeleccionado = null
         }
     }
 
     private fun mostrarDetallePuesto(puesto: Puesto) {
-        puestoNormalSeleccionado = puesto
+        viewModel.puestoNormalSeleccionado = puesto
         with(binding) {
             tvNombreProductoTarjeta.text = puesto.nombrePuesto
             tvPrecioProductoTarjeta.visibility = View.GONE
 
             btnVerMas.visibility = View.VISIBLE
             btnVerMas.setOnClickListener {
-                navegandoADetalle = true
-                val centro = fragmentoMapa?.obtenerCentroActual()
-                val zoom = fragmentoMapa?.obtenerZoomActual()
-                if (centro != null && zoom != null) {
-                    viewModel.camaraAlSalir = CamaraMapa(centro.latitude, centro.longitude, zoom)
-                }
-                val bundle = bundleOf(
-                    "idProducto" to -1,
-                    "idPuesto" to puesto.idPuesto
-                )
-                findNavController().navigate(R.id.accionInicioConsumidorADetalleProducto, bundle)
+                viewModel.cargarDetalle(puesto.idPuesto, -1)
             }
 
             tarjetaPuesto.visibility = View.VISIBLE
@@ -487,7 +593,7 @@ class FragmentoInicioConsumidor : Fragment() {
     }
 
     private fun mostrarDetalleResultado(producto: ProductoBuscado) {
-        productoResultadoSeleccionado = producto
+        viewModel.productoResultadoSeleccionado = producto
         with(binding) {
             tvNombreProductoTarjeta.text = producto.nombreProducto
 
@@ -507,17 +613,7 @@ class FragmentoInicioConsumidor : Fragment() {
 
             btnVerMas.visibility = View.VISIBLE
             btnVerMas.setOnClickListener {
-                navegandoADetalle = true
-                val centro = fragmentoMapa?.obtenerCentroActual()
-                val zoom = fragmentoMapa?.obtenerZoomActual()
-                if (centro != null && zoom != null) {
-                    viewModel.camaraAlSalir = CamaraMapa(centro.latitude, centro.longitude, zoom)
-                }
-                val bundle = bundleOf(
-                    "idProducto" to producto.idProducto,
-                    "idPuesto" to producto.idPuesto
-                )
-                findNavController().navigate(R.id.accionInicioConsumidorADetalleProducto, bundle)
+                viewModel.cargarDetalle(producto.idPuesto, producto.idProducto)
             }
 
             tarjetaPuesto.visibility = View.VISIBLE
@@ -553,10 +649,14 @@ class FragmentoInicioConsumidor : Fragment() {
                         binding.drawerLayout.closeDrawer(GravityCompat.START)
                     } else if (modoBusquedaActivo) {
                         desactivarModoBusqueda()
+                    } else if (viewModel.estadoRuta.value !is EstadoRuta.Inactivo) {
+                        viewModel.limpiarRuta()
+                    } else if (viewModel.estadoDetalle.value is EstadoDetalle.Listo) {
+                        viewModel.cerrarDetalle()
                     } else if (binding.tarjetaPuesto.visibility == View.VISIBLE) {
                         binding.tarjetaPuesto.visibility = View.GONE
-                        puestoNormalSeleccionado = null
-                        productoResultadoSeleccionado = null
+                        viewModel.puestoNormalSeleccionado = null
+                        viewModel.productoResultadoSeleccionado = null
                     } else if (modoResultadosActivo) {
                         desactivarModoResultados()
                     } else {
@@ -586,6 +686,91 @@ class FragmentoInicioConsumidor : Fragment() {
                         is EstadoInicioConsumidor.Error -> {
                             binding.indicadorCargandoPuestos.visibility = View.GONE
                             Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.estadoDetalle.collect { estado ->
+                    when (estado) {
+                        is EstadoDetalle.Oculto -> {
+                            binding.panelDetalle.visibility = View.GONE
+                        }
+                        is EstadoDetalle.Cargando -> {
+                            binding.indicadorCargandoPuestos.visibility = View.VISIBLE
+                        }
+                        is EstadoDetalle.Listo -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            val datos = estado.datos
+                            binding.tvTituloDetalle.text = datos.titulo
+                            binding.tvDescripcionDetalle.text = if (datos.descripcion.isNullOrBlank()) {
+                                getString(R.string.sin_descripcion)
+                            } else {
+                                datos.descripcion
+                            }
+
+                            if (datos.esProductoConcreto) {
+                                binding.tvPrecioDetalle.visibility = View.VISIBLE
+                                binding.tvPrecioDetalle.text = datos.precioTexto
+                                binding.tvDisponibleDetalle.visibility = View.VISIBLE
+                                binding.tvDisponibleDetalle.text = datos.disponibleTexto
+                            } else {
+                                binding.tvPrecioDetalle.visibility = View.GONE
+                                binding.tvDisponibleDetalle.visibility = View.GONE
+                            }
+
+                            fotosDetalle = datos.fotos
+                            indiceFotoActual = 0
+                            mostrarFotoActual()
+
+                            binding.panelDetalle.visibility = View.VISIBLE
+                        }
+                        is EstadoDetalle.Error -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            Toast.makeText(requireContext(), estado.mensaje, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.estadoRuta.collect { estado ->
+                    when (estado) {
+                        is EstadoRuta.Inactivo -> {
+                            fragmentoMapa?.limpiarRuta()
+                        }
+                        is EstadoRuta.Calculando -> {
+                            binding.indicadorCargandoPuestos.visibility = View.VISIBLE
+                        }
+                        is EstadoRuta.Exito -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            val puntos = estado.puntos
+                            fragmentoMapa?.dibujarRuta(puntos)
+                            fragmentoMapa?.ajustarEncuadrePuntos(puntos)
+
+                            val miUbicacion = fragmentoMapa?.obtenerMiPosicion()
+                            if (miUbicacion != null && !LimitesFeria.estaDentro(miUbicacion.latitude, miUbicacion.longitude)) {
+                                Toast.makeText(requireContext(), R.string.aviso_fuera_de_feria, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        is EstadoRuta.FalloLineaRecta -> {
+                            binding.indicadorCargandoPuestos.visibility = View.GONE
+                            val origen = estado.origen
+                            val destino = estado.destino
+                            fragmentoMapa?.dibujarRutaRecta(origen, destino)
+                            fragmentoMapa?.ajustarEncuadrePuntos(listOf(origen, destino))
+
+                            val mensajeToast = getString(R.string.aviso_error_ruta_recta, estado.motivo)
+                            Toast.makeText(requireContext(), mensajeToast, Toast.LENGTH_LONG).show()
+
+                            if (!LimitesFeria.estaDentro(origen.latitude, origen.longitude)) {
+                                Toast.makeText(requireContext(), R.string.aviso_fuera_de_feria, Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 }

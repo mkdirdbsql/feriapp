@@ -193,6 +193,157 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- PANEL DE DETALLE (PRODUCTO / PUESTO) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/panelDetalle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:layout_constraintBottom_toTopOf="@id/barraInferior"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- CABECERA: TÍTULO Y CERRAR -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvTituloDetalle"
+                            style="@style/estilo_titulo"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="20sp"
+                            tools:text="Ropa de Varón" />
+
+                        <ImageButton
+                            android:id="@+id/btnCerrarDetalle"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/descripcion_cerrar"
+                            android:src="@drawable/ic_cerrar" />
+                    </LinearLayout>
+
+                    <!-- SECCIÓN FOTOS CON FLECHAS -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="16dp">
+
+                        <ImageView
+                            android:id="@+id/imgFotoDetalle"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@string/descripcion_imagen_puesto"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_puesto_placeholder" />
+
+                        <ImageButton
+                            android:id="@+id/btnFotoAnterior"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/descripcion_foto_anterior"
+                            android:src="@drawable/ic_flecha_izquierda"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btnFotoSiguiente"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/descripcion_foto_siguiente"
+                            android:src="@drawable/ic_flecha_derecha"
+                            android:visibility="gone" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/tvContadorFotos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        tools:text="1 de 3" />
+
+                    <!-- DESCRIPCIÓN -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/etiqueta_descripcion"
+                        android:textColor="@color/color_texto"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDescripcionDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="14sp"
+                        tools:text="Ropa de varón fardo abierto tallas desde M hasta XL" />
+
+                    <!-- PRECIO -->
+                    <TextView
+                        android:id="@+id/tvPrecioDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="Precio: 50 Bs" />
+
+                    <!-- DISPONIBLE -->
+                    <TextView
+                        android:id="@+id/tvDisponibleDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="14sp"
+                        tools:text="Disponible: Sí" />
+
+                    <!-- BOTÓN UNIFICADO TRAZAR RUTA -->
+                    <Button
+                        android:id="@+id/btnTrazarRuta"
+                        style="@style/estilo_boton_principal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/trazar_ruta" />
+
+                </LinearLayout>
+            </ScrollView>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- TARJETA RESULTADO / DETALLE RÁPIDO PUESTO (OVERLAY) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/tarjetaPuesto"

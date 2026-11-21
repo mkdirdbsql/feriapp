@@ -3,13 +3,17 @@ package com.feriapp.app.ui.common
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.DashPathEffect
+import android.graphics.Paint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.feriapp.app.R
 import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoMapaBinding
 import com.feriapp.app.util.LimitesFeria
@@ -17,6 +21,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
@@ -37,6 +42,16 @@ class FragmentoMapa : Fragment() {
 
     private var capaUbicacion: MyLocationNewOverlay? = null
     private val marcadoresMapa = mutableListOf<Marker>()
+    private var capaRuta: Polyline? = null
+    private var modoAreaAmpliada: Boolean = false
+
+    var ubicacionDeseada: Boolean = false
+        set(value) {
+            field = value
+            if (_binding != null) {
+                aplicarUbicacionDeseada()
+            }
+        }
 
     private var ultimaListaMarcadores: List<MarcadorMapa>? = null
     private var ultimoCentro: GeoPoint? = null
@@ -51,7 +66,9 @@ class FragmentoMapa : Fragment() {
         val concedido = (permisos[Manifest.permission.ACCESS_FINE_LOCATION] == true) ||
                 (permisos[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
         if (concedido) {
-            activarUbicacionActual()
+            ubicacionDeseada = true
+        } else {
+            ubicacionDeseada = false
         }
         callbackUbicacion?.invoke(concedido)
         callbackUbicacion = null
@@ -113,6 +130,8 @@ class FragmentoMapa : Fragment() {
 
     fun obtenerZoomActual(): Double? = _binding?.mapaFeria?.zoomLevelDouble
 
+    fun obtenerMiPosicion(): GeoPoint? = capaUbicacion?.myLocation
+
     fun fijarCamaraDirecta(latitud: Double, longitud: Double, zoom: Double) {
         val mapa = _binding?.mapaFeria ?: return
         val punto = GeoPoint(latitud, longitud)
@@ -156,7 +175,7 @@ class FragmentoMapa : Fragment() {
         ) == PackageManager.PERMISSION_GRANTED
 
         if (tienePrecisa || tieneAproximada) {
-            activarUbicacionActual()
+            ubicacionDeseada = true
             alCompletar?.invoke(true)
         } else {
             callbackUbicacion = alCompletar
@@ -169,28 +188,36 @@ class FragmentoMapa : Fragment() {
         }
     }
 
-    private fun activarUbicacionActual() {
+    private fun aplicarUbicacionDeseada() {
         val mapa = _binding?.mapaFeria ?: return
-        if (capaUbicacion == null) {
-            val proveedorGps = GpsMyLocationProvider(requireContext())
-            capaUbicacion = MyLocationNewOverlay(proveedorGps, mapa).apply {
-                enableMyLocation()
+        if (ubicacionDeseada) {
+            Log.d("FeriApp", "FragmentoMapa: aplicando ubicacionDeseada = true")
+            if (capaUbicacion == null) {
+                val proveedorGps = GpsMyLocationProvider(requireContext())
+                capaUbicacion = MyLocationNewOverlay(proveedorGps, mapa).apply {
+                    enableMyLocation()
+                }
+                mapa.overlays.add(capaUbicacion)
+            } else {
+                capaUbicacion?.enableMyLocation()
+                if (!mapa.overlays.contains(capaUbicacion)) {
+                    mapa.overlays.add(capaUbicacion)
+                }
             }
-            mapa.overlays.add(capaUbicacion)
+            mapa.invalidate()
         } else {
-            capaUbicacion?.enableMyLocation()
+            Log.d("FeriApp", "FragmentoMapa: aplicando ubicacionDeseada = false")
+            capaUbicacion?.let {
+                it.disableMyLocation()
+                mapa.overlays.remove(it)
+            }
+            capaUbicacion = null
+            mapa.invalidate()
         }
-        mapa.invalidate()
     }
 
     fun desactivarUbicacion() {
-        val mapa = _binding?.mapaFeria ?: return
-        capaUbicacion?.let {
-            it.disableMyLocation()
-            mapa.overlays.remove(it)
-        }
-        capaUbicacion = null
-        mapa.invalidate()
+        ubicacionDeseada = false
     }
 
     fun centrarEnMiUbicacion(): Boolean {
@@ -278,6 +305,95 @@ class FragmentoMapa : Fragment() {
         mapa.zoomToBoundingBox(box, true)
     }
 
+    fun dibujarRuta(puntos: List<GeoPoint>) {
+        val mapa = _binding?.mapaFeria ?: return
+        limpiarRuta()
+
+        val colorRuta = ContextCompat.getColor(requireContext(), R.color.color_secundario)
+        val anchoPx = (7 * resources.displayMetrics.density)
+        val polilinea = Polyline(mapa).apply {
+            outlinePaint.color = colorRuta
+            outlinePaint.strokeWidth = anchoPx
+            outlinePaint.strokeCap = Paint.Cap.ROUND
+            outlinePaint.strokeJoin = Paint.Join.ROUND
+            setPoints(puntos)
+        }
+        capaRuta = polilinea
+        mapa.overlays.add(polilinea)
+        mapa.invalidate()
+    }
+
+    fun dibujarRutaRecta(origen: GeoPoint, destino: GeoPoint) {
+        val mapa = _binding?.mapaFeria ?: return
+        limpiarRuta()
+
+        val colorRuta = ContextCompat.getColor(requireContext(), R.color.color_secundario)
+        val anchoPx = (7 * resources.displayMetrics.density)
+        val polilinea = Polyline(mapa).apply {
+            outlinePaint.color = colorRuta
+            outlinePaint.strokeWidth = anchoPx
+            outlinePaint.strokeCap = Paint.Cap.ROUND
+            outlinePaint.strokeJoin = Paint.Join.ROUND
+            outlinePaint.pathEffect = DashPathEffect(floatArrayOf(20f, 10f), 0f)
+            setPoints(listOf(origen, destino))
+        }
+        capaRuta = polilinea
+        mapa.overlays.add(polilinea)
+        mapa.invalidate()
+    }
+
+    fun limpiarRuta() {
+        val mapa = _binding?.mapaFeria ?: return
+        capaRuta?.let {
+            mapa.overlays.remove(it)
+        }
+        capaRuta = null
+
+        if (modoAreaAmpliada) {
+            modoAreaAmpliada = false
+            mapa.setScrollableAreaLimitDouble(LimitesFeria.cajaLimites)
+            mapa.minZoomLevel = 14.0
+        }
+
+        mapa.invalidate()
+    }
+
+    fun ajustarEncuadrePuntos(puntos: List<GeoPoint>) {
+        val mapa = _binding?.mapaFeria ?: return
+        if (puntos.isEmpty()) return
+
+        val hayPuntoFuera = puntos.any { !LimitesFeria.estaDentro(it.latitude, it.longitude) }
+        if (hayPuntoFuera) {
+            modoAreaAmpliada = true
+            mapa.setScrollableAreaLimitDouble(null)
+            mapa.minZoomLevel = 6.0
+        }
+
+        var minLat = 90.0
+        var maxLat = -90.0
+        var minLng = 180.0
+        var maxLng = -180.0
+
+        puntos.forEach { p ->
+            if (p.latitude < minLat) minLat = p.latitude
+            if (p.latitude > maxLat) maxLat = p.latitude
+            if (p.longitude < minLng) minLng = p.longitude
+            if (p.longitude > maxLng) maxLng = p.longitude
+        }
+
+        val latPadding = (maxLat - minLat).coerceAtLeast(0.001) * 0.25
+        val lngPadding = (maxLng - minLng).coerceAtLeast(0.001) * 0.25
+
+        val box = BoundingBox(
+            maxLat + latPadding,
+            maxLng + lngPadding,
+            minLat - latPadding,
+            minLng - lngPadding
+        )
+
+        mapa.zoomToBoundingBox(box, true)
+    }
+
     private fun dibujarMarcadoresInterno() {
         val mapa = _binding?.mapaFeria ?: return
         val marcadores = ultimaListaMarcadores ?: return
@@ -313,6 +429,7 @@ class FragmentoMapa : Fragment() {
     override fun onResume() {
         super.onResume()
         _binding?.mapaFeria?.onResume()
+        aplicarUbicacionDeseada()
         if (ultimaListaMarcadores != null) {
             dibujarMarcadoresInterno()
         }
@@ -320,6 +437,7 @@ class FragmentoMapa : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        capaUbicacion?.disableMyLocation()
         _binding?.mapaFeria?.let { mapa ->
             ultimoCentro = mapa.mapCenter as? GeoPoint ?: ultimoCentro
             ultimoZoom = mapa.zoomLevelDouble

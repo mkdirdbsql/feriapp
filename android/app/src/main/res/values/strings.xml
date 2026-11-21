@@ -54,6 +54,20 @@
     <string name="descripcion_limpiar_busqueda">Limpiar búsqueda</string>
     <string name="titulo_detalle_producto">Fragmento Detalle Producto</string>
 
+    <!-- DETALLE EN PANEL Y RUTAS -->
+    <string name="sin_fotos">Sin fotos</string>
+    <string name="sin_descripcion">Sin descripción</string>
+    <string name="trazar_ruta">Trazar ruta</string>
+    <string name="etiqueta_descripcion">Descripción:</string>
+    <string name="disponible_si">Disponible: Sí</string>
+    <string name="disponible_no">Disponible: No</string>
+    <string name="formato_contador_fotos">%1$d de %2$d</string>
+    <string name="aviso_sin_posicion">Aún no se obtiene tu ubicación.</string>
+    <string name="aviso_error_ruta_recta">No se pudo calcular la ruta (%s); se muestra una línea recta.</string>
+    <string name="aviso_fuera_de_feria">Estás fuera del área de la feria; la ruta puede verse más pequeña.</string>
+    <string name="descripcion_foto_anterior">Foto anterior</string>
+    <string name="descripcion_foto_siguiente">Foto siguiente</string>
+
     <!-- MENÚ LATERAL Y MÁS INFORMACIÓN -->
     <string name="menu_cambiar_cuenta">Cambiar cuenta</string>
     <string name="menu_aspecto">Aspecto</string>
