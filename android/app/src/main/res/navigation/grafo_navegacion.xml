@@ -55,6 +55,11 @@
         <action
             android:id="@+id/accionSeleccionAInicioSesion"
             app:destination="@id/fragmentoInicioSesion" />
+        <action
+            android:id="@+id/accionSeleccionAInicioComerciante"
+            app:destination="@id/fragmentoInicioComerciante"
+            app:popUpTo="@id/fragmentoSeleccionUsuario"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -63,13 +68,10 @@
         android:label="FragmentoRegistro"
         tools:layout="@layout/fragmento_registro">
         <action
-            android:id="@+id/accionRegistroAInicioComerciante"
-            app:destination="@id/fragmentoInicioComerciante"
-            app:popUpTo="@id/fragmentoSeleccionUsuario"
-            app:popUpToInclusive="true" />
-        <action
             android:id="@+id/accionRegistroAInicioSesion"
-            app:destination="@id/fragmentoInicioSesion" />
+            app:destination="@id/fragmentoInicioSesion"
+            app:popUpTo="@id/fragmentoInicioSesion"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment

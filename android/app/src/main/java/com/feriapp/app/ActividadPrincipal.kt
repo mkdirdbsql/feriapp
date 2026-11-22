@@ -6,10 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.feriapp.app.ui.common.FragmentoMapa
-import com.feriapp.app.util.Resultado
-import kotlinx.coroutines.launch
+import androidx.navigation.fragment.NavHostFragment
 
 class ActividadPrincipal : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +17,12 @@ class ActividadPrincipal : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.contenedorNavegacion) as? NavHostFragment
+        val navController = navHostFragment?.navController
+        navController?.addOnDestinationChangedListener { _, destino, _ ->
+            Log.d("FeriApp", "Destino=${destino.label}")
         }
     }
 }

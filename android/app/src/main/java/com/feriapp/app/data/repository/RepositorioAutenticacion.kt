@@ -40,7 +40,7 @@ class RepositorioAutenticacion(
         nombreComercial: String,
         descripcionComercio: String?,
     ): Resultado<RespuestaSesion> {
-        val resultado = ejecutarLlamadaSegura(gestorSesion) {
+        return ejecutarLlamadaSegura(gestorSesion) {
             servicioApi.registrarComerciante(
                 SolicitudRegistroComerciante(
                     nombre = nombre,
@@ -52,17 +52,6 @@ class RepositorioAutenticacion(
                 )
             )
         }
-        if (resultado is Resultado.Exito) {
-            val sesionDto = resultado.datos
-            gestorSesion.guardarSesion(
-                token = sesionDto.token,
-                rol = sesionDto.rol,
-                idUsuario = sesionDto.idUsuario,
-                idComerciante = sesionDto.idComerciante,
-                nombre = sesionDto.nombre,
-            )
-        }
-        return resultado
     }
 
     suspend fun cerrarSesion() {

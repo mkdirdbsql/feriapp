@@ -13,6 +13,7 @@
     <string name="ayuda_usuario">Tu número de teléfono</string>
     <string name="etiqueta_contrasena">Contraseña</string>
     <string name="btn_ingresar">Ingresar</string>
+    <string name="btn_guardar">Guardar</string>
     <string name="pregunta_no_tienes_cuenta">¿No tienes cuenta?</string>
     <string name="btn_registrarse">Registrarse</string>
     <string name="error_campos_vacios">Por favor, completa todos los campos</string>
@@ -96,4 +97,39 @@
     <string name="info_texto_6">No registres información falsa ni de otras personas. El administrador puede desactivar las cuentas que incumplan estas normas.</string>
     <string name="info_titulo_7">Conexión</string>
     <string name="info_texto_7">FeriApp necesita conexión a internet para mostrar puestos y productos.</string>
+
+    <!-- COMERCIANTE -->
+    <string name="registro_exitoso_mensaje">Registro exitoso. Ingresa con tu teléfono y tu contraseña.</string>
+    <string name="etiqueta_agregar_puesto">Agregar Puesto</string>
+    <string name="etiqueta_agregar_producto">Agregar Producto</string>
+    <string name="formato_contador_productos">%1$d / 3</string>
+    <string name="titulo_dialogo_ubicacion_comerciante">Ubicación</string>
+    <string name="mensaje_dialogo_ubicacion_comerciante">Activa tu ubicación para añadir tu puesto</string>
+    <string name="btn_activar">Activar</string>
+    <string name="aviso_encender_gps_comerciante">Enciende el GPS y vuelve a pulsar Agregar Puesto</string>
+    <string name="snackbar_ubicacion_comerciante">Para poder añadir tu puesto y tus productos primero debes activar tu ubicación. Lee más en Información.</string>
+    <string name="btn_informacion">Información</string>
+    <string name="btn_reintentar">Reintentar</string>
+    <string name="toast_agregar_puesto_proximamente">Agregar puesto se implementa en el siguiente paso</string>
+    <string name="toast_agregar_producto_proximamente">Agregar producto se implementa en un paso siguiente</string>
+
+    <!-- PASO C2: AGREGAR PUESTO -->
+    <string name="titulo_seccion_nombre_puesto">Agrega un nombre a tu Puesto</string>
+    <string name="titulo_seccion_imagen_puesto">Agrega una imagen del puesto</string>
+    <string name="titulo_ubicacion_encontrada">Ubicación encontrada</string>
+    <string name="error_nombre_puesto_requerido">Escribe el nombre de tu puesto</string>
+    <string name="buscando_tu_ubicacion">Buscando tu ubicación…</string>
+    <string name="aviso_puesto_guardado_sin_imagen">Puesto guardado, pero no se pudo subir la imagen. Podrás agregarla en Editar puesto.</string>
+    <string name="aviso_ubicacion_fuera_feria_c2b">Tu ubicación está fuera de la Feria 16 de Julio. Solo puedes añadir tu puesto dentro de la feria.</string>
+    <string name="aviso_no_pudimos_obtener_ubicacion_c2b">No pudimos obtener tu ubicación. Revisa que tu GPS esté encendido e inténtalo de nuevo.</string>
+    <string name="aviso_sin_posicion_guardar">Aún no tenemos tu ubicación</string>
+    <string name="activa_ubicacion_centrarte">Activa tu ubicación para centrarte</string>
+
+    <!-- PASO C3: ESTADO CON PUESTO Y GLOBO -->
+    <string name="btn_editar_puesto">Editar puesto</string>
+    <string name="btn_editar_productos">Editar productos</string>
+    <string name="toast_editar_puesto_proximamente">Editar puesto se implementa en un paso siguiente</string>
+    <string name="toast_editar_productos_proximamente">Editar productos se implementa en un paso siguiente</string>
+    <string name="globo_agregar_producto_texto">Agrega el Producto a tu puesto. Máximo 3 productos :)</string>
+    <string name="toast_maximo_productos_alcanzado">Ya tienes 3 productos, el máximo permitido</string>
 </resources>

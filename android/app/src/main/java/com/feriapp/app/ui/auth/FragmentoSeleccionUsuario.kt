@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.feriapp.app.AplicacionFeria
 import com.feriapp.app.R
 import com.feriapp.app.databinding.FragmentoSeleccionUsuarioBinding
+import kotlinx.coroutines.launch
 
 class FragmentoSeleccionUsuario : Fragment() {
 
@@ -31,7 +34,15 @@ class FragmentoSeleccionUsuario : Fragment() {
         }
 
         binding.btnIrARegistroComerciante.setOnClickListener {
-            findNavController().navigate(R.id.accionSeleccionAInicioSesion)
+            val gestorSesion = (requireActivity().application as AplicacionFeria).contenedorApp.gestorSesion
+            viewLifecycleOwner.lifecycleScope.launch {
+                val sesion = gestorSesion.obtenerSesion()
+                if (sesion != null && sesion.rol.equals("comerciante", ignoreCase = true)) {
+                    findNavController().navigate(R.id.accionSeleccionAInicioComerciante)
+                } else {
+                    findNavController().navigate(R.id.accionSeleccionAInicioSesion)
+                }
+            }
         }
     }
 

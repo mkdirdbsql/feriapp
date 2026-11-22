@@ -131,7 +131,8 @@ class FragmentoRegistro : Fragment() {
                     is EstadoRegistro.Exito -> {
                         mostrarCargando(false)
                         viewModel.restablecerEstado()
-                        findNavController().navigate(R.id.accionRegistroAInicioComerciante)
+                        Toast.makeText(requireContext(), R.string.registro_exitoso_mensaje, Toast.LENGTH_LONG).show()
+                        findNavController().navigate(R.id.accionRegistroAInicioSesion)
                     }
                     is EstadoRegistro.Error -> {
                         mostrarCargando(false)

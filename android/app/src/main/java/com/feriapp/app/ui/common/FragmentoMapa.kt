@@ -32,7 +32,8 @@ data class MarcadorMapa(
     val longitud: Double,
     val titulo: String,
     val subtitulo: String? = null,
-    val datosOriginales: Any? = null
+    val datosOriginales: Any? = null,
+    val icono: Int? = null
 )
 
 class FragmentoMapa : Fragment() {
@@ -192,7 +193,15 @@ class FragmentoMapa : Fragment() {
         val mapa = _binding?.mapaFeria ?: return
         if (ubicacionDeseada) {
             Log.d("FeriApp", "FragmentoMapa: aplicando ubicacionDeseada = true")
-            if (capaUbicacion == null) {
+            if (capaUbicacion == null || !mapa.overlays.contains(capaUbicacion)) {
+                if (capaUbicacion != null) {
+                    try {
+                        capaUbicacion?.disableMyLocation()
+                    } catch (e: Exception) {
+                        Log.d("FeriApp", "Limpiando capa vieja de ubicacion: ${e.message}")
+                    }
+                    capaUbicacion = null
+                }
                 val proveedorGps = GpsMyLocationProvider(requireContext())
                 capaUbicacion = MyLocationNewOverlay(proveedorGps, mapa).apply {
                     enableMyLocation()
@@ -200,15 +209,16 @@ class FragmentoMapa : Fragment() {
                 mapa.overlays.add(capaUbicacion)
             } else {
                 capaUbicacion?.enableMyLocation()
-                if (!mapa.overlays.contains(capaUbicacion)) {
-                    mapa.overlays.add(capaUbicacion)
-                }
             }
             mapa.invalidate()
         } else {
             Log.d("FeriApp", "FragmentoMapa: aplicando ubicacionDeseada = false")
             capaUbicacion?.let {
-                it.disableMyLocation()
+                try {
+                    it.disableMyLocation()
+                } catch (e: Exception) {
+                    Log.d("FeriApp", "Error al deshabilitar ubicacion: ${e.message}")
+                }
                 mapa.overlays.remove(it)
             }
             capaUbicacion = null
@@ -407,6 +417,10 @@ class FragmentoMapa : Fragment() {
                 title = m.titulo
                 snippet = m.subtitulo
                 id = m.id.toString()
+                if (m.icono != null) {
+                    icon = ContextCompat.getDrawable(requireContext(), m.icono)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                }
                 setOnMarkerClickListener { _, _ ->
                     alSeleccionarMarcador?.invoke(m.id, m.datosOriginales)
                     true
@@ -437,7 +451,11 @@ class FragmentoMapa : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        capaUbicacion?.disableMyLocation()
+        try {
+            capaUbicacion?.disableMyLocation()
+        } catch (e: Exception) {
+            Log.d("FeriApp", "Error al deshabilitar ubicacion en onPause: ${e.message}")
+        }
         _binding?.mapaFeria?.let { mapa ->
             ultimoCentro = mapa.mapCenter as? GeoPoint ?: ultimoCentro
             ultimoZoom = mapa.zoomLevelDouble
@@ -447,8 +465,17 @@ class FragmentoMapa : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        capaUbicacion?.disableMyLocation()
+        try {
+            capaUbicacion?.disableMyLocation()
+        } catch (e: Exception) {
+            Log.d("FeriApp", "Error al deshabilitar ubicacion en onDestroyView: ${e.message}")
+        }
         _binding?.mapaFeria?.onDetach()
+
+        capaUbicacion = null
+        capaRuta = null
+        marcadoresMapa.clear()
+
         _binding = null
     }
 }
