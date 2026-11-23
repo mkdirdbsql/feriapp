@@ -5,4 +5,5 @@
     <color name="color_fondo">#FFFFFF</color>
     <color name="color_texto">#212121</color>
     <color name="color_error">#B3261C</color>
+    <color name="color_exito">#2E7D32</color>
 </resources>

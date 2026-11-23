@@ -1,15 +1,268 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true"
+    tools:context=".ui.comerciante.FragmentoAgregarProducto">
 
-    <TextView
-        style="@style/estilo_titulo"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agregar Producto" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</LinearLayout>
+        <!-- TÍTULO -->
+        <TextView
+            android:id="@+id/tvTituloAgregarProducto"
+            style="@style/estilo_titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/titulo_agregar_tu_producto"
+            android:textSize="22sp" />
+
+        <!-- NOMBRE PRODUCTO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/etiqueta_nombre_producto"
+            android:textColor="@color/color_texto"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutNombreProducto"
+            style="@style/estilo_campo_texto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:counterEnabled="true"
+            app:counterMaxLength="80">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombreProducto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLength="80"
+                android:maxLines="1"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- DESCRIPCIÓN PRODUCTO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/etiqueta_descripcion_producto"
+            android:textColor="@color/color_texto"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutDescripcionProducto"
+            style="@style/estilo_campo_texto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:counterEnabled="true"
+            app:counterMaxLength="300">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescripcionProducto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:maxLength="300"
+                android:minLines="4" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- CATEGORÍA PRODUCTO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/etiqueta_categoria_producto"
+            android:textColor="@color/color_texto"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutCategoriaProducto"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actvCategoria"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ERROR CARGA CATEGORÍAS -->
+        <TextView
+            android:id="@+id/tvErrorCategorias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/color_error"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Error al cargar categorías" />
+
+        <Button
+            android:id="@+id/btnReintentarCategorias"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_reintentar"
+            android:visibility="gone" />
+
+        <!-- PRECIO PRODUCTO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/etiqueta_precio_producto"
+            android:textColor="@color/color_texto"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutPrecioProducto"
+            style="@style/estilo_campo_texto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:suffixText="Bs">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPrecioProducto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- FILA INFERIOR: DISPONIBLE Y BLOQUE IMAGEN -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/cbDisponible"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="@string/etiqueta_disponible"
+                android:textColor="@color/color_texto"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/etiqueta_agrega_imagen_producto"
+                    android:textColor="@color/color_texto"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="6dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivImagenProducto"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:background="?attr/colorSurfaceVariant"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="20dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_agregar_imagen"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+                    <ImageButton
+                        android:id="@+id/btnQuitarImagen"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_boton_circulo_comerciante"
+                        android:contentDescription="@string/descripcion_cerrar"
+                        android:padding="6dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_cerrar"
+                        android:visibility="gone"
+                        app:tint="@color/color_fondo" />
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- INDICADOR CARGANDO AL GUARDAR -->
+        <ProgressBar
+            android:id="@+id/pbGuardandoProducto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+        <!-- BOTONES EN FILA -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnGuardarProducto"
+                style="@style/estilo_boton_principal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/color_exito"
+                android:text="@string/btn_guardar" />
+
+            <Button
+                android:id="@+id/btnCancelarProducto"
+                style="@style/estilo_boton_principal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/color_error"
+                android:text="@string/btn_cancelar" />
+        </LinearLayout>
+
+        <!-- BOTÓN ELIMINAR PRODUCTO (MODO EDICIÓN SOLO) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEliminarProducto"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/btn_eliminar_producto"
+            android:textColor="@color/color_error"
+            android:visibility="gone"
+            app:strokeColor="@color/color_error" />
+
+    </LinearLayout>
+</ScrollView>

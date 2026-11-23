@@ -5,4 +5,5 @@
     <color name="color_fondo">#121212</color>
     <color name="color_texto">#EDEDED</color>
     <color name="color_error">#F2B8B5</color>
+    <color name="color_exito">#4CAF50</color>
 </resources>

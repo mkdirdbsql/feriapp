@@ -137,7 +137,12 @@
         android:id="@+id/fragmentoAgregarProducto"
         android:name="com.feriapp.app.ui.comerciante.FragmentoAgregarProducto"
         android:label="FragmentoAgregarProducto"
-        tools:layout="@layout/fragmento_agregar_producto" />
+        tools:layout="@layout/fragmento_agregar_producto">
+        <argument
+            android:name="idProducto"
+            android:defaultValue="-1"
+            app:argType="integer" />
+    </fragment>
 
     <!-- ADMINISTRADOR -->
     <fragment

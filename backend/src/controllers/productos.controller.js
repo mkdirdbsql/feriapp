@@ -185,7 +185,7 @@ async function crearProducto(req, res) {
 // Así el comerciante actualiza también la disponibilidad.
 async function actualizarProducto(req, res) {
   const { id } = req.params;
-  const { nombre_producto, descripcion, precio, disponible } = req.body;
+  const { nombre_producto, descripcion, precio, disponible, id_categoria } = req.body;
 
   if (precio != null && !(Number(precio) > 0)) {
     return res.status(400).json({ error: 'El precio debe ser mayor a 0' });
@@ -197,10 +197,11 @@ async function actualizarProducto(req, res) {
         nombre_producto = COALESCE($1, nombre_producto),
         descripcion     = COALESCE($2, descripcion),
         precio          = COALESCE($3, precio),
-        disponible      = COALESCE($4, disponible)
-       WHERE id_producto = $5
+        disponible      = COALESCE($4, disponible),
+        id_categoria    = COALESCE($5, id_categoria)
+       WHERE id_producto = $6
        RETURNING id_producto`,
-      [nombre_producto, descripcion, precio, disponible, id]
+      [nombre_producto, descripcion, precio, disponible, id_categoria, id]
     );
 
     if (result.rows.length === 0) {
@@ -209,6 +210,9 @@ async function actualizarProducto(req, res) {
     res.json({ mensaje: 'Producto actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar producto:', error);
+    if (error.code === '23503') {
+      return res.status(400).json({ error: 'La categoría indicada no existe' });
+    }
     res.status(500).json({ error: 'Error al actualizar producto' });
   }
 }

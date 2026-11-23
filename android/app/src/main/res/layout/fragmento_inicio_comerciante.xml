@@ -37,6 +37,54 @@
                 android:textStyle="bold|italic" />
         </LinearLayout>
 
+        <!-- CONTENEDOR FILTROS DE CATEGORÍAS VECINAS (CON PUESTO Y PRODUCTOS) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/contenedorFiltrosCategorias"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/etiqueta_ver_puestos_con"
+                    android:textColor="@color/color_texto"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupCategorias"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipSpacing="6dp"
+                        app:singleLine="true" />
+                </HorizontalScrollView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- MAPA (CENTRO) -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/contenedorMapa"
@@ -162,6 +210,78 @@
                 android:textColor="@color/color_texto"
                 android:textSize="13sp"
                 android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- TARJETA FIJA "PUESTO VECINO" (ESTADO CON PUESTO Y MARCADOR VECINO SELECCIONADO) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaVecino"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            app:layout_constraintBottom_toTopOf="@id/barraInferior"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgPuestoVecino"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:contentDescription="@string/descripcion_imagen_puesto"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_puesto_placeholder"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvNombrePuestoVecino"
+                        style="@style/estilo_titulo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:textSize="16sp"
+                        tools:text="Puesto Vecino" />
+
+                    <TextView
+                        android:id="@+id/tvNombreComercialVecino"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        tools:text="Comercial Doña María" />
+
+                    <LinearLayout
+                        android:id="@+id/contenedorProductosVecino"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btnCerrarVecino"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/descripcion_cerrar"
+                    android:src="@drawable/ic_cerrar" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- TARJETA FIJA "MI PUESTO" (ESTADO CON PUESTO) -->

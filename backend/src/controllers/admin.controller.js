@@ -47,7 +47,9 @@ async function listarComerciantes(req, res) {
         c.estado,
         u.fecha_registro,
         pu.id_puesto,
-        pu.nombre_puesto
+        pu.nombre_puesto,
+        ST_X(pu.ubicacion) AS longitud,
+        ST_Y(pu.ubicacion) AS latitud
       FROM comerciante c
       JOIN usuario u ON u.id_usuario = c.id_usuario
       LEFT JOIN puesto pu ON pu.id_comerciante = c.id_comerciante
@@ -113,7 +115,15 @@ async function obtenerComerciante(req, res) {
            pr.descripcion,
            pr.precio,
            pr.disponible,
-           cat.nombre_categoria
+           cat.nombre_categoria,
+           COALESCE(
+             (SELECT json_agg(
+                json_build_object('id_imagen', im.id_imagen, 'ruta_imagen', im.ruta_imagen)
+                ORDER BY im.id_imagen)
+              FROM imagen_producto im
+              WHERE im.id_producto = pr.id_producto),
+             '[]'::json
+           ) AS imagenes
          FROM producto_puesto pp
          JOIN producto pr ON pr.id_producto = pp.id_producto
          JOIN categoria cat ON cat.id_categoria = pr.id_categoria

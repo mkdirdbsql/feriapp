@@ -55,6 +55,7 @@ data class SolicitudActualizarProducto(
     val descripcion: String? = null,
     val precio: Double? = null,
     val disponible: Boolean? = null,
+    val idCategoria: Int? = null,
 )
 
 data class RespuestaCrearProducto(

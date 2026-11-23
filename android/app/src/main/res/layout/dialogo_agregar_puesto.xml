@@ -69,6 +69,27 @@
             android:src="@drawable/ic_agregar_imagen"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
 
+        <!-- MODO EDICIÓN: BOTÓN ACTUALIZAR UBICACIÓN Y MENSAJE -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnActualizarUbicacion"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/btn_actualizar_ubicacion"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvEstadoUbicacionEdicion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/msg_ubicacion_actualizada"
+            android:textColor="@color/color_primario"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
         <ProgressBar
             android:id="@+id/pbGuardando"
             android:layout_width="wrap_content"

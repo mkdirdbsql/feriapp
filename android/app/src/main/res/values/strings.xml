@@ -132,4 +132,49 @@
     <string name="toast_editar_productos_proximamente">Editar productos se implementa en un paso siguiente</string>
     <string name="globo_agregar_producto_texto">Agrega el Producto a tu puesto. Máximo 3 productos :)</string>
     <string name="toast_maximo_productos_alcanzado">Ya tienes 3 productos, el máximo permitido</string>
+
+    <!-- PASO C4: AGREGAR TU PRODUCTO -->
+    <string name="titulo_agregar_tu_producto">Agrega Tu producto</string>
+    <string name="etiqueta_nombre_producto">Nombre:</string>
+    <string name="error_nombre_producto_requerido">Escribe el nombre del producto</string>
+    <string name="etiqueta_descripcion_producto">Descripción:</string>
+    <string name="etiqueta_categoria_producto">Categoría:</string>
+    <string name="error_categoria_requerida">Selecciona una categoría</string>
+    <string name="etiqueta_precio_producto">Precio:</string>
+    <string name="error_precio_invalido">Escribe un precio mayor a 0</string>
+    <string name="etiqueta_disponible">Disponible</string>
+    <string name="etiqueta_agrega_imagen_producto">Agrega una imagen de tu producto</string>
+    <string name="opcion_tomar_foto">Tomar foto</string>
+    <string name="opcion_elegir_galeria">Elegir de la galería</string>
+    <string name="opcion_quitar_imagen">Quitar imagen</string>
+    <string name="titulo_dialogo_opciones_imagen">Imagen del producto</string>
+    <string name="aviso_no_app_camara">No se encontró una app de cámara</string>
+    <string name="producto_guardado">Producto guardado</string>
+    <string name="producto_guardado_sin_imagen">Producto guardado, pero no se pudo subir la imagen. Podrás agregarla en Editar productos.</string>
+    <string name="titulo_dialogo_descartar_producto">¿Descartar este producto?</string>
+    <string name="btn_descartar">Descartar</string>
+    <string name="btn_seguir_editando">Seguir editando</string>
+
+    <!-- PASO C5: VECINOS Y FILTROS -->
+    <string name="etiqueta_ver_puestos_con">Ver puestos con:</string>
+    <string name="aviso_no_se_pudieron_cargar_vecinos">No se pudieron cargar los otros puestos</string>
+    <string name="aviso_sin_otros_puestos_categoria">Aún no hay otros puestos con esta categoría</string>
+    <string name="formato_producto_vecino">%1$s — %2$s Bs</string>
+
+    <!-- PASO C6: EDICIÓN DE PUESTO -->
+    <string name="titulo_edicion_puesto">Edición de puesto</string>
+    <string name="btn_actualizar_ubicacion">Usar mi ubicación actual</string>
+    <string name="msg_ubicacion_actualizada">Ubicación actualizada</string>
+    <string name="msg_puesto_actualizado">Puesto actualizado correctamente</string>
+    <string name="msg_error_actualizar_puesto">No se pudo actualizar el puesto</string>
+
+    <!-- PASO C7: EDICIÓN DE PRODUCTOS -->
+    <string name="titulo_editar_producto">Editar Producto</string>
+    <string name="titulo_elegir_producto">¿Qué producto quieres editar?</string>
+    <string name="btn_eliminar_producto">Eliminar producto</string>
+    <string name="msg_producto_actualizado">Producto actualizado correctamente</string>
+    <string name="msg_producto_eliminado">Producto eliminado</string>
+    <string name="confirmar_eliminar_producto">¿Eliminar este producto? Esta acción no se puede deshacer.</string>
+    <string name="msg_sin_productos_editar">Aún no tienes productos para editar. Agrega uno primero.</string>
+    <string name="btn_guardar_cambios">Guardar cambios</string>
 </resources>
