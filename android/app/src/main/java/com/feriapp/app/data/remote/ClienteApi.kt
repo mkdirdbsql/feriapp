@@ -18,8 +18,8 @@ class ClienteApi(gestorSesion: GestorSesion) {
 
     private val okHttpClient = OkHttpClient.Builder().apply {
         connectTimeout(15, TimeUnit.SECONDS)
-        readTimeout(15, TimeUnit.SECONDS)
-        writeTimeout(15, TimeUnit.SECONDS)
+        readTimeout(60, TimeUnit.SECONDS)
+        writeTimeout(30, TimeUnit.SECONDS)
 
         addInterceptor(InterceptorAutenticacion(gestorSesion))
 

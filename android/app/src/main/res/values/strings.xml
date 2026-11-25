@@ -196,4 +196,41 @@
     <string name="titulo_dialogo_salir_admin">Cerrar sesión</string>
     <string name="mensaje_dialogo_salir_admin">¿Cerrar sesión de administrador?</string>
     <string name="msg_sesion_expirada">Tu sesión expiró, inicia sesión de nuevo</string>
+
+    <!-- PASO C9: EDICIÓN DE USUARIO POR EL ADMINISTRADOR -->
+    <string name="formato_usuario_nombre">Usuario: %1$s %2$s</string>
+    <string name="formato_comercio_estado">Comercio: %1$s · Estado: %2$s</string>
+    <string name="estado_activo">Activo</string>
+    <string name="estado_inactivo">Inactivo</string>
+    <string name="formato_coordenadas">Ubicación: %1$.5f, %2$.5f</string>
+    <string name="ubicacion_sin_puesto">Ubicación: sin puesto registrado</string>
+    <string name="msg_coordenadas_copiadas">Coordenadas copiadas</string>
+    <string name="etiqueta_selector_producto">#Producto:</string>
+    <string name="sin_productos_comerciante">Este comerciante aún no tiene productos</string>
+    <string name="formato_detalle_producto_num">Producto: %1$s %2$d/%3$d</string>
+    <string name="formato_categoria_producto">Categoría: %s</string>
+    <string name="formato_disponible_si_no">Producto Disponible: %s</string>
+    <string name="texto_si">SÍ</string>
+    <string name="texto_no">NO</string>
+    <string name="opcion_habilitado">Habilitado</string>
+    <string name="opcion_deshabilitado">Deshabilitado</string>
+    <string name="btn_guardar_cambios_admin">Guardar</string>
+    <string name="msg_no_hay_cambios">No hay cambios que guardar</string>
+    <string name="confirmar_deshabilitar_usuario">¿Deshabilitar a %s? No podrá iniciar sesión y su puesto y productos dejarán de verse en la app.</string>
+    <string name="btn_deshabilitar">Deshabilitar</string>
+    <string name="msg_usuario_estado_actualizado">Usuario actualizado correctamente</string>
+    <string name="confirmar_eliminar_usuario">¿Eliminar definitivamente a %s? Se borrarán su cuenta, su puesto, sus productos y sus fotos. Esta acción no se puede deshacer.</string>
+    <string name="msg_usuario_eliminado_admin">Usuario eliminado</string>
+    <string name="msg_usuario_no_existe">El usuario ya no existe</string>
+    <string name="titulo_dialogo_cambios_sin_guardar">Cambios sin guardar</string>
+    <string name="mensaje_dialogo_cambios_sin_guardar">Tienes cambios sin guardar. ¿Salir de todas formas?</string>
+    <string name="btn_salir_sin_guardar">Salir de todas formas</string>
+
+    <!-- GENERACIÓN DE REPORTES ADMINISTRADOR -->
+    <string name="reporte_generando">Generando reporte…</string>
+    <string name="reporte_generado_titulo">Reporte generado</string>
+    <string name="btn_abrir">Abrir</string>
+    <string name="btn_compartir">Compartir</string>
+    <string name="btn_cerrar">Cerrar</string>
+    <string name="error_sin_app_para_abrir">No hay una app instalada para abrir este archivo, usa Compartir</string>
 </resources>

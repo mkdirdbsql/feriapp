@@ -8,6 +8,11 @@ import com.feriapp.app.data.model.aModelo
 import com.feriapp.app.data.remote.ServicioApi
 import com.feriapp.app.data.remote.dto.*
 import com.feriapp.app.util.Resultado
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 
 typealias RepositorioAdmin = RepositorioAdministracion
 
@@ -67,6 +72,43 @@ class RepositorioAdministracion(
             is Resultado.Exito -> Resultado.Exito(resultado.datos.aModelo())
             is Resultado.Error -> Resultado.Error(resultado.mensaje, resultado.codigo)
             is Resultado.Cargando -> Resultado.Cargando
+        }
+    }
+
+    suspend fun descargarReporte(formato: String, destino: File): Resultado<File> = withContext(Dispatchers.IO) {
+        try {
+            val token = gestorSesion.obtenerToken()
+            if (token.isNullOrBlank()) {
+                return@withContext Resultado.Error("No hay sesión activa", 401)
+            }
+
+            val respuesta = servicioApi.descargarReporte(formato)
+            if (respuesta.isSuccessful) {
+                val body = respuesta.body() ?: return@withContext Resultado.Error("Cuerpo de respuesta vacío")
+                destino.parentFile?.mkdirs()
+                body.byteStream().use { input ->
+                    FileOutputStream(destino).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                Resultado.Exito(destino)
+            } else {
+                val codigo = respuesta.code()
+                val errorBody = respuesta.errorBody()?.string()
+                val mensajeError = try {
+                    if (!errorBody.isNullOrBlank()) {
+                        val json = JSONObject(errorBody)
+                        json.optString("error", json.optString("mensaje", "Error al descargar el reporte"))
+                    } else {
+                        "Error al descargar el reporte"
+                    }
+                } catch (e: Exception) {
+                    "Error al descargar el reporte"
+                }
+                Resultado.Error(mensajeError, codigo)
+            }
+        } catch (e: Exception) {
+            Resultado.Error(e.localizedMessage ?: "Error de conexión al descargar reporte")
         }
     }
 }

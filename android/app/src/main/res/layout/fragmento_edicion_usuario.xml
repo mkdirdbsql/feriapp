@@ -1,32 +1,391 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="20dp">
+    android:fillViewport="true"
+    tools:context=".ui.admin.FragmentoEdicionUsuario">
 
-    <TextView
-        style="@style/estilo_titulo"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Edición de usuario"
-        android:textSize="20sp" />
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/tvIdComerciante"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/color_texto"
-        android:textSize="14sp" />
+        <!-- CABECERA DE MODO ADMINISTRADOR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnSalirEdicion"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="@string/btn_salir" />
+            <TextView
+                style="@style/estilo_titulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/titulo_modo_administrador"
+                android:textSize="20sp" />
 
-</LinearLayout>
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:contentDescription="@string/titulo_modo_administrador"
+                android:src="@drawable/ic_admin"
+                app:tint="?attr/colorOnSurface" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvFechaEdicionAdmin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/color_texto"
+                android:textSize="13sp"
+                tools:text="Fecha: 24/11/2026" />
+
+            <TextView
+                android:id="@+id/tvHoraEdicionAdmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_texto"
+                android:textSize="13sp"
+                tools:text="Hora: 12:00 PM" />
+        </LinearLayout>
+
+        <!-- TARJETA DETALLES DEL USUARIO Y SU PUESTO -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaDetalleUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/tvNombreUsuarioEdicion"
+                    style="@style/estilo_titulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    tools:text="Usuario: Juan Pérez" />
+
+                <TextView
+                    android:id="@+id/tvComercioEstadoEdicion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/color_texto"
+                    android:textSize="13sp"
+                    tools:text="Comercio: Comercial Juan · Estado: Activo" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgPuestoEdicion"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="10dp"
+                    android:contentDescription="@string/descripcion_imagen_puesto"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_puesto_placeholder"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+                <TextView
+                    android:id="@+id/tvUbicacionEdicion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:textColor="@color/color_secundario"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="Ubicación: -16.49490, -68.17364" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- SECCIÓN DE PRODUCTOS DEL COMERCIANTE -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaSeccionProductos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/color_fondo"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- FILA SELECTOR NUMÉRICO DE PRODUCTOS -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/etiqueta_selector_producto"
+                        android:textColor="@color/color_texto"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutSelectorProducto"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/actvSelectorProductoEdicion"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvSinProductosEdicion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/sin_productos_comerciante"
+                    android:textColor="@color/color_error"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <!-- DETALLES Y FOTOS DEL PRODUCTO SELECCIONADO -->
+                <LinearLayout
+                    android:id="@+id/contenedorDetalleProductoEdicion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvNombreProductoEdicion"
+                        style="@style/estilo_titulo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        tools:text="Producto: Camisa 1/3" />
+
+                    <TextView
+                        android:id="@+id/tvCategoriaProductoEdicion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        tools:text="Categoría: Ropa" />
+
+                    <TextView
+                        android:id="@+id/tvPrecioProductoEdicion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        tools:text="Precio: 50 Bs" />
+
+                    <TextView
+                        android:id="@+id/tvDisponibleProductoEdicion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        tools:text="Producto Disponible: SÍ" />
+
+                    <!-- CARRUSEL FOTOS DEL PRODUCTO -->
+                    <LinearLayout
+                        android:id="@+id/contenedorCarruselFotosEdicion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageButton
+                            android:id="@+id/btnAnteriorFotoEdicion"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/descripcion_foto_anterior"
+                            android:src="@drawable/ic_anterior" />
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/imgProductoEdicion"
+                            android:layout_width="0dp"
+                            android:layout_height="140dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_puesto_placeholder"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
+
+                        <ImageButton
+                            android:id="@+id/btnSiguienteFotoEdicion"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/descripcion_foto_siguiente"
+                            android:src="@drawable/ic_siguiente" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvContadorFotosEdicion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/color_texto"
+                        android:textSize="12sp"
+                        tools:text="1/1" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- SELECTOR DE ESTADO DEL COMERCIANTE Y ELIMINAR -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleGroupEstadoAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleHabilitado"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/opcion_habilitado"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleDeshabilitado"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/opcion_deshabilitado"
+                android:textSize="12sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleEliminar"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_eliminar_producto"
+                android:textColor="@color/color_error"
+                android:textSize="12sp"
+                app:strokeColor="@color/color_error" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <ProgressBar
+            android:id="@+id/pbGuardandoEdicion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
+        <!-- BOTONES GUARDAR Y SALIR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnGuardarEdicion"
+                style="@style/estilo_boton_principal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:backgroundTint="@color/color_exito"
+                android:text="@string/btn_guardar_cambios_admin" />
+
+            <Button
+                android:id="@+id/btnSalirEdicion"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:text="@string/btn_salir" />
+        </LinearLayout>
+
+        <!-- INDICADOR CARGANDO OVERLAY -->
+        <ProgressBar
+            android:id="@+id/indicadorCargandoEdicion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="32dp"
+            android:visibility="gone" />
+
+        <!-- TARJETA ERROR OVERLAY -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tarjetaErrorEdicion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvMensajeErrorEdicion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/color_error"
+                    android:textSize="14sp"
+                    tools:text="Error al cargar detalle" />
+
+                <Button
+                    android:id="@+id/btnReintentarEdicion"
+                    style="@style/estilo_boton_principal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/btn_reintentar" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>

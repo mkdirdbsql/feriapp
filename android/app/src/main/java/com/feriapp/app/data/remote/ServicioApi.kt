@@ -29,6 +29,7 @@ import com.feriapp.app.data.remote.dto.SolicitudRegistroComerciante
 import com.feriapp.app.data.remote.dto.SolicitudUbicacion
 import com.feriapp.app.data.remote.dto.UbicacionDto
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -39,6 +40,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface ServicioApi {
 
@@ -192,4 +194,10 @@ interface ServicioApi {
 
     @GET("api/admin/reportes")
     suspend fun obtenerReportes(): Response<ReporteDto>
+
+    @Streaming
+    @GET("api/admin/reportes/archivo")
+    suspend fun descargarReporte(
+        @Query("formato") formato: String,
+    ): Response<ResponseBody>
 }

@@ -1,11 +1,14 @@
 package com.feriapp.app.ui.admin
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,6 +27,7 @@ import com.feriapp.app.ui.common.fabricaViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -79,9 +83,8 @@ class FragmentoInicioAdministrador : Fragment() {
         }
 
         binding.btnGenerarReporteAdmin.setOnClickListener {
-            Toast.makeText(requireContext(), R.string.toast_agregar_puesto_proximamente, Toast.LENGTH_SHORT).apply {
-                setText("Próximamente")
-            }.show()
+            val formato = viewModel.formatoReporteSeleccionado
+            viewModel.generarReporte(formato)
         }
 
         binding.btnSalirAdmin.setOnClickListener {
@@ -141,7 +144,7 @@ class FragmentoInicioAdministrador : Fragment() {
                     binding.tvFechaAdmin.text = getString(R.string.formato_fecha_admin, formatoFecha.format(ahora))
                     binding.tvHoraAdmin.text = getString(R.string.formato_hora_admin, formatoHora.format(ahora))
 
-                    delay(10000) // Actualizar periódicamente
+                    delay(10000)
                 }
             }
         }
@@ -183,6 +186,105 @@ class FragmentoInicioAdministrador : Fragment() {
                     }
                 }
             }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.estadoReporte.collect { estadoReporte ->
+                    when (estadoReporte) {
+                        is EstadoReporteAdmin.Inactivo -> {
+                            mostrarGenerandoReporte(false)
+                        }
+                        is EstadoReporteAdmin.Generando -> {
+                            mostrarGenerandoReporte(true)
+                        }
+                        is EstadoReporteAdmin.Listo -> {
+                            mostrarGenerandoReporte(false)
+                            if (!estadoReporte.consumido) {
+                                mostrarDialogoReporteListo(estadoReporte.archivo, estadoReporte.mimeType)
+                            }
+                        }
+                        is EstadoReporteAdmin.Error -> {
+                            mostrarGenerandoReporte(false)
+                            if (estadoReporte.esSesionExpirada) {
+                                Toast.makeText(requireContext(), R.string.msg_sesion_expirada, Toast.LENGTH_LONG).show()
+                                viewLifecycleOwner.lifecycleScope.launch {
+                                    viewModel.cerrarSesion()
+                                    findNavController().navigate(R.id.accionInicioAdministradorASeleccionUsuario)
+                                }
+                            } else {
+                                Toast.makeText(requireContext(), estadoReporte.mensaje, Toast.LENGTH_LONG).show()
+                                viewModel.consumirReporte()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun mostrarGenerandoReporte(generando: Boolean) {
+        binding.indicadorCargandoAdmin.visibility = if (generando) View.VISIBLE else View.GONE
+        binding.btnGenerarReporteAdmin.isEnabled = !generando
+        binding.btnSalirAdmin.isEnabled = !generando
+        binding.btnFormatoPdf.isEnabled = !generando
+        binding.btnFormatoWord.isEnabled = !generando
+    }
+
+    private fun mostrarDialogoReporteListo(archivo: File, mimeType: String) {
+        viewModel.consumirReporte()
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.reporte_generado_titulo)
+            .setMessage(archivo.name)
+            .setPositiveButton(R.string.btn_abrir) { dialog, _ ->
+                dialog.dismiss()
+                abrirArchivoReporte(archivo, mimeType)
+            }
+            .setNeutralButton(R.string.btn_compartir) { dialog, _ ->
+                dialog.dismiss()
+                compartirArchivoReporte(archivo, mimeType)
+            }
+            .setNegativeButton(R.string.btn_cerrar) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun abrirArchivoReporte(archivo: File, mimeType: String) {
+        try {
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                archivo
+            )
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mimeType)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(requireContext(), R.string.error_sin_app_para_abrir, Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), e.localizedMessage ?: "Error al abrir reporte", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun compartirArchivoReporte(archivo: File, mimeType: String) {
+        try {
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                archivo
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                putExtra(Intent.EXTRA_STREAM, uri)
+                type = mimeType
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, getString(R.string.btn_compartir)))
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), e.localizedMessage ?: "Error al compartir reporte", Toast.LENGTH_SHORT).show()
         }
     }
 
