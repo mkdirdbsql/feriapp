@@ -11,6 +11,8 @@ data class ComercianteResumenDto(
     val fechaRegistro: String,
     val idPuesto: Int?,
     val nombrePuesto: String?,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
 )
 
 data class ComercianteDetalleDto(

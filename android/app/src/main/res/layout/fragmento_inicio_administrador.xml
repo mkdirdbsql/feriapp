@@ -1,31 +1,302 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp"
+    tools:context=".ui.admin.FragmentoInicioAdministrador">
 
-    <TextView
-        style="@style/estilo_titulo"
+    <!-- SECCIÓN SUPERIOR: TÍTULO, ÍCONO Y FECHA/HORA -->
+    <LinearLayout
+        android:id="@+id/layoutCabeceraAdmin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/estilo_titulo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/titulo_modo_administrador"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:contentDescription="@string/titulo_modo_administrador"
+                android:src="@drawable/ic_admin"
+                app:tint="?attr/colorOnSurface" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvFechaAdmin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/color_texto"
+                android:textSize="13sp"
+                tools:text="Fecha: 23/11/2026" />
+
+            <TextView
+                android:id="@+id/tvHoraAdmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_texto"
+                android:textSize="13sp"
+                tools:text="Hora: 12:00 PM" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- MAPA REUTILIZABLE (CENTRO) -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/contenedorMapaAdmin"
+        android:name="com.feriapp.app.ui.common.FragmentoMapa"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/panelInferiorAdmin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutCabeceraAdmin" />
+
+    <!-- CONTROLES ZOOM MAPA -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inicio Administrador" />
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/contenedorMapaAdmin"
+        app:layout_constraintEnd_toEndOf="@id/contenedorMapaAdmin">
 
-    <Button
-        android:id="@+id/btnEditarComerciante"
-        style="@style/estilo_boton_principal"
-        android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnAcercarAdmin"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/descripcion_acercar"
+            android:src="@drawable/ic_mas" />
+
+        <ImageButton
+            android:id="@+id/btnAlejarAdmin"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/descripcion_alejar"
+            android:src="@drawable/ic_menos" />
+    </LinearLayout>
+
+    <!-- INDICADOR CARGANDO -->
+    <ProgressBar
+        android:id="@+id/indicadorCargandoAdmin"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Editar Comerciante" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/contenedorMapaAdmin"
+        app:layout_constraintEnd_toEndOf="@id/contenedorMapaAdmin"
+        app:layout_constraintStart_toStartOf="@id/contenedorMapaAdmin"
+        app:layout_constraintTop_toTopOf="@id/contenedorMapaAdmin" />
 
-    <Button
-        android:id="@+id/btnCerrarSesionAdmin"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="match_parent"
+    <!-- TARJETA ERROR -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/tarjetaErrorAdmin"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Cerrar Sesión" />
+        android:layout_margin="16dp"
+        android:visibility="gone"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        app:layout_constraintBottom_toBottomOf="@id/contenedorMapaAdmin"
+        app:layout_constraintEnd_toEndOf="@id/contenedorMapaAdmin"
+        app:layout_constraintStart_toStartOf="@id/contenedorMapaAdmin"
+        app:layout_constraintTop_toTopOf="@id/contenedorMapaAdmin">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvMensajeErrorAdmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_error"
+                android:textSize="14sp"
+                tools:text="Error al cargar datos" />
+
+            <Button
+                android:id="@+id/btnReintentarAdmin"
+                style="@style/estilo_boton_principal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/btn_reintentar" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- PANEL INFERIOR CONTROLES Y REPORTES -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/panelInferiorAdmin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/color_fondo"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- FILA DATOS USUARIO / VER USUARIO -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvUsuarioAdmin"
+                        style="@style/estilo_titulo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:text="@string/panel_usuario_no_seleccionado"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvPuestoAdmin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:maxLines="1"
+                        android:textColor="@color/color_texto"
+                        android:textSize="12sp"
+                        tools:text="Puesto: Don Pedro" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnVerUsuarioAdmin"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:enabled="false"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
+                    android:text="@string/btn_ver_usuario"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginVertical="8dp"
+                android:background="?attr/colorOutlineVariant" />
+
+            <!-- PRODUCTO MÁS BUSCADO -->
+            <TextView
+                android:id="@+id/tvProductoMasBuscadoAdmin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_texto"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="Producto más buscado: Ropa (42)" />
+
+            <!-- SELECTOR FORMATO Y BOTONES DE ACCIÓN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleGroupFormatoReporte"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormatoPdf"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="0dp"
+                        android:text="@string/opcion_reporte_pdf"
+                        android:textSize="12sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormatoWord"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="0dp"
+                        android:text="@string/opcion_reporte_word"
+                        android:textSize="12sp" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <Button
+                    android:id="@+id/btnGenerarReporteAdmin"
+                    style="@style/estilo_boton_principal"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="0dp"
+                    android:text="@string/btn_generar_reporte"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnSalirAdmin"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="0dp"
+                    android:text="@string/btn_salir"
+                    android:textColor="@color/color_error"
+                    android:textSize="12sp"
+                    app:strokeColor="@color/color_error" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

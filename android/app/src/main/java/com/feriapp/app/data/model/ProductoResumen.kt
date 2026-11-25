@@ -7,4 +7,5 @@ data class ProductoResumen(
     val precio: Double,
     val disponible: Boolean,
     val nombreCategoria: String,
+    val imagenes: List<Imagen> = emptyList(),
 )

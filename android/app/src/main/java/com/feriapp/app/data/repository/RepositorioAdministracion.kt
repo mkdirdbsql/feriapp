@@ -9,10 +9,14 @@ import com.feriapp.app.data.remote.ServicioApi
 import com.feriapp.app.data.remote.dto.*
 import com.feriapp.app.util.Resultado
 
+typealias RepositorioAdmin = RepositorioAdministracion
+
 class RepositorioAdministracion(
     private val servicioApi: ServicioApi,
     private val gestorSesion: GestorSesion,
 ) {
+    suspend fun listarComerciantes(): Resultado<List<Comerciante>> = listar()
+
     suspend fun listar(): Resultado<List<Comerciante>> {
         val resultado = ejecutarLlamadaSegura(gestorSesion) {
             servicioApi.listarComerciantes()
@@ -23,6 +27,8 @@ class RepositorioAdministracion(
             is Resultado.Cargando -> Resultado.Cargando
         }
     }
+
+    suspend fun obtenerComerciante(idComerciante: Int): Resultado<DetalleComerciante> = obtener(idComerciante)
 
     suspend fun obtener(idComerciante: Int): Resultado<DetalleComerciante> {
         val resultado = ejecutarLlamadaSegura(gestorSesion) {

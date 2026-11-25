@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.feriapp.app.databinding.FragmentoEdicionUsuarioBinding
 
 class FragmentoEdicionUsuario : Fragment() {
@@ -26,6 +27,10 @@ class FragmentoEdicionUsuario : Fragment() {
 
         val idComerciante = arguments?.getInt("idComerciante", 0) ?: 0
         binding.tvIdComerciante.text = "ID Comerciante: $idComerciante"
+
+        binding.btnSalirEdicion.setOnClickListener {
+            findNavController().popBackStack()
+        }
     }
 
     override fun onDestroyView() {

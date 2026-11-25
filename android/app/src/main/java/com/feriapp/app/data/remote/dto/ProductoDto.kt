@@ -40,6 +40,7 @@ data class ProductoResumenDto(
     val precio: Double,
     val disponible: Boolean,
     val nombreCategoria: String,
+    val imagenes: List<ImagenDto> = emptyList(),
 )
 
 data class SolicitudCrearProducto(

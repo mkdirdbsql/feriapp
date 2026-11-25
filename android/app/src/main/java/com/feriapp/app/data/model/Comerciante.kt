@@ -11,4 +11,6 @@ data class Comerciante(
     val fechaRegistro: String,
     val idPuesto: Int?,
     val nombrePuesto: String?,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
 )

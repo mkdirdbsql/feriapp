@@ -54,6 +54,7 @@ fun ProductoResumenDto.aModelo(): ProductoResumen = ProductoResumen(
     precio = precio,
     disponible = disponible,
     nombreCategoria = nombreCategoria,
+    imagenes = imagenes.map { it.aModelo() },
 )
 
 fun ProductoBusquedaDto.aModelo(): ProductoBuscado = ProductoBuscado(
@@ -97,6 +98,8 @@ fun ComercianteResumenDto.aModelo(): Comerciante = Comerciante(
     fechaRegistro = fechaRegistro,
     idPuesto = idPuesto,
     nombrePuesto = nombrePuesto,
+    latitud = latitud,
+    longitud = longitud,
 )
 
 fun ComercianteDetalleDto.aModelo(): DetalleComerciante = DetalleComerciante(

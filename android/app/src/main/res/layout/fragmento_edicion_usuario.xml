@@ -4,19 +4,29 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <TextView
         style="@style/estilo_titulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Edición de Usuario" />
+        android:text="Edición de usuario"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/tvIdComerciante"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="ID Comerciante: " />
+        android:textColor="@color/color_texto"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/btnSalirEdicion"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/btn_salir" />
 
 </LinearLayout>

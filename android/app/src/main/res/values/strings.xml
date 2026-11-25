@@ -10,7 +10,7 @@
     <string name="titulo_inicio_sesion_comerciante">Comerciante</string>
     <string name="descripcion_icono_usuario">Ícono de usuario</string>
     <string name="etiqueta_usuario">Usuario</string>
-    <string name="ayuda_usuario">Tu número de teléfono</string>
+    <string name="ayuda_usuario">Usuario o número de teléfono</string>
     <string name="etiqueta_contrasena">Contraseña</string>
     <string name="btn_ingresar">Ingresar</string>
     <string name="btn_guardar">Guardar</string>
@@ -177,4 +177,23 @@
     <string name="confirmar_eliminar_producto">¿Eliminar este producto? Esta acción no se puede deshacer.</string>
     <string name="msg_sin_productos_editar">Aún no tienes productos para editar. Agrega uno primero.</string>
     <string name="btn_guardar_cambios">Guardar cambios</string>
+
+    <!-- PASO C8: MODO ADMINISTRADOR -->
+    <string name="titulo_modo_administrador">Modo Administrador</string>
+    <string name="formato_fecha_admin">Fecha: %s</string>
+    <string name="formato_hora_admin">Hora: %s</string>
+    <string name="panel_usuario_no_seleccionado">Selecciona un usuario en el mapa</string>
+    <string name="formato_panel_usuario">Usuario: %1$s %2$s > id -%3$d</string>
+    <string name="formato_panel_puesto">Puesto: %s</string>
+    <string name="sin_puesto">Sin puesto</string>
+    <string name="btn_ver_usuario">Ver usuario</string>
+    <string name="formato_producto_mas_buscado">Producto más buscado: %1$s (%2$d)</string>
+    <string name="producto_mas_buscado_sin_datos">Producto más buscado: Sin datos</string>
+    <string name="opcion_reporte_pdf">PDF</string>
+    <string name="opcion_reporte_word">Word</string>
+    <string name="btn_generar_reporte">Generar Reporte</string>
+    <string name="btn_salir">Salir</string>
+    <string name="titulo_dialogo_salir_admin">Cerrar sesión</string>
+    <string name="mensaje_dialogo_salir_admin">¿Cerrar sesión de administrador?</string>
+    <string name="msg_sesion_expirada">Tu sesión expiró, inicia sesión de nuevo</string>
 </resources>
