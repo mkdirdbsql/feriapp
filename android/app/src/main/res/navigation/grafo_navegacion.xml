@@ -115,9 +115,6 @@
         android:label="FragmentoInicioComerciante"
         tools:layout="@layout/fragmento_inicio_comerciante">
         <action
-            android:id="@+id/accionInicioComercianteAAgregarPuesto"
-            app:destination="@id/fragmentoAgregarPuesto" />
-        <action
             android:id="@+id/accionInicioComercianteAAgregarProducto"
             app:destination="@id/fragmentoAgregarProducto" />
         <action
@@ -126,12 +123,6 @@
             app:popUpTo="@id/fragmentoInicioComerciante"
             app:popUpToInclusive="true" />
     </fragment>
-
-    <fragment
-        android:id="@+id/fragmentoAgregarPuesto"
-        android:name="com.feriapp.app.ui.comerciante.FragmentoAgregarPuesto"
-        android:label="FragmentoAgregarPuesto"
-        tools:layout="@layout/fragmento_agregar_puesto" />
 
     <fragment
         android:id="@+id/fragmentoAgregarProducto"

@@ -51,15 +51,12 @@
     <string name="no_disponible">No disponible</string>
     <string name="ver_mas">ver más</string>
     <string name="descripcion_limpiar_busqueda">Limpiar búsqueda</string>
-    <string name="titulo_detalle_producto">Fragmento Detalle Producto</string>
 
     <!-- DETALLE EN PANEL Y RUTAS -->
     <string name="sin_fotos">Sin fotos</string>
     <string name="sin_descripcion">Sin descripción</string>
     <string name="trazar_ruta">Trazar ruta</string>
     <string name="etiqueta_descripcion">Descripción:</string>
-    <string name="disponible_si">Disponible: Sí</string>
-    <string name="disponible_no">Disponible: No</string>
     <string name="formato_contador_fotos">%1$d de %2$d</string>
     <string name="aviso_sin_posicion">Aún no se obtiene tu ubicación.</string>
     <string name="aviso_error_ruta_recta">No se pudo calcular la ruta (%s); se muestra una línea recta.</string>
@@ -110,8 +107,6 @@
     <string name="snackbar_ubicacion_comerciante">Para poder añadir tu puesto y tus productos primero debes activar tu ubicación. Lee más en Información.</string>
     <string name="btn_informacion">Información</string>
     <string name="btn_reintentar">Reintentar</string>
-    <string name="toast_agregar_puesto_proximamente">Agregar puesto se implementa en el siguiente paso</string>
-    <string name="toast_agregar_producto_proximamente">Agregar producto se implementa en un paso siguiente</string>
 
     <!-- PASO C2: AGREGAR PUESTO -->
     <string name="titulo_seccion_nombre_puesto">Agrega un nombre a tu Puesto</string>
@@ -128,8 +123,6 @@
     <!-- PASO C3: ESTADO CON PUESTO Y GLOBO -->
     <string name="btn_editar_puesto">Editar puesto</string>
     <string name="btn_editar_productos">Editar productos</string>
-    <string name="toast_editar_puesto_proximamente">Editar puesto se implementa en un paso siguiente</string>
-    <string name="toast_editar_productos_proximamente">Editar productos se implementa en un paso siguiente</string>
     <string name="globo_agregar_producto_texto">Agrega el Producto a tu puesto. Máximo 3 productos :)</string>
     <string name="toast_maximo_productos_alcanzado">Ya tienes 3 productos, el máximo permitido</string>
 
