@@ -252,7 +252,7 @@
                             android:layout_width="36dp"
                             android:layout_height="36dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="@string/descripcion_foto_siguiente"
+                            android:contentDescription="@string/descripcion_foto_anterior"
                             android:src="@drawable/ic_siguiente" />
                     </LinearLayout>
 
@@ -303,7 +303,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/btn_eliminar_producto"
+                android:text="@string/opcion_eliminar_usuario"
                 android:textColor="@color/color_error"
                 android:textSize="12sp"
                 app:strokeColor="@color/color_error" />
@@ -340,7 +340,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
-                android:text="@string/btn_salir" />
+                android:text="@string/btn_salir_admin_edicion" />
         </LinearLayout>
 
         <!-- INDICADOR CARGANDO OVERLAY -->

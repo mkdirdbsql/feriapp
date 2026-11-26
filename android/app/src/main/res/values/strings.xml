@@ -68,6 +68,8 @@
     <string name="aviso_fuera_de_feria">Estás fuera del área de la feria; la ruta puede verse más pequeña.</string>
     <string name="descripcion_foto_anterior">Foto anterior</string>
     <string name="descripcion_foto_siguiente">Foto siguiente</string>
+    <string name="msg_llegaste_a_destino">¡Llegaste a tu destino!</string>
+    <string name="msg_recalculando_ruta">Recalculando ruta…</string>
 
     <!-- MENÚ LATERAL Y MÁS INFORMACIÓN -->
     <string name="menu_cambiar_cuenta">Cambiar cuenta</string>
@@ -214,7 +216,9 @@
     <string name="texto_no">NO</string>
     <string name="opcion_habilitado">Habilitado</string>
     <string name="opcion_deshabilitado">Deshabilitado</string>
+    <string name="opcion_eliminar_usuario">Eliminar</string>
     <string name="btn_guardar_cambios_admin">Guardar</string>
+    <string name="btn_salir_admin_edicion">Salir</string>
     <string name="msg_no_hay_cambios">No hay cambios que guardar</string>
     <string name="confirmar_deshabilitar_usuario">¿Deshabilitar a %s? No podrá iniciar sesión y su puesto y productos dejarán de verse en la app.</string>
     <string name="btn_deshabilitar">Deshabilitar</string>

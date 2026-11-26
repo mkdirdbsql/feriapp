@@ -281,6 +281,19 @@
                             android:visibility="gone" />
                     </RelativeLayout>
 
+                    <!-- NOMBRE PRODUCTO (MODO VECINO / PRODUCTOS DE PUESTO) -->
+                    <TextView
+                        android:id="@+id/tvNombreProductoDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:textColor="@color/color_texto"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="Nombre del Producto" />
+
                     <TextView
                         android:id="@+id/tvContadorFotos"
                         android:layout_width="wrap_content"
@@ -385,6 +398,18 @@
                         android:layout_height="wrap_content"
                         android:textSize="16sp"
                         tools:text="Ropa de Varón" />
+
+                    <TextView
+                        android:id="@+id/tvDescripcionPuestoTarjeta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        tools:text="Descripción del puesto de prueba" />
 
                     <TextView
                         android:id="@+id/tvPrecioProductoTarjeta"

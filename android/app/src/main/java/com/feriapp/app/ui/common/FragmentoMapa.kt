@@ -1,15 +1,26 @@
 package com.feriapp.app.ui.common
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.DashPathEffect
 import android.graphics.Paint
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -17,13 +28,16 @@ import com.feriapp.app.R
 import com.feriapp.app.data.model.Puesto
 import com.feriapp.app.databinding.FragmentoMapaBinding
 import com.feriapp.app.util.LimitesFeria
+import com.feriapp.app.util.RutaUtil
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.IMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 data class MarcadorMapa(
@@ -36,15 +50,87 @@ data class MarcadorMapa(
     val icono: Int? = null
 )
 
+class CapaMiUbicacion(
+    proveedorGps: GpsMyLocationProvider,
+    mapView: MapView
+) : MyLocationNewOverlay(proveedorGps, mapView) {
+
+    var alCambiarUbicacion: ((GeoPoint) -> Unit)? = null
+
+    fun actualizarAzimut(azimut: Float) {
+        val fix = lastFix
+        if (fix != null) {
+            val loc = Location(fix)
+            loc.bearing = azimut
+            setLocation(loc)
+        }
+    }
+
+    override fun onLocationChanged(location: Location?, source: IMyLocationProvider?) {
+        super.onLocationChanged(location, source)
+        if (location != null) {
+            val punto = GeoPoint(location.latitude, location.longitude)
+            alCambiarUbicacion?.invoke(punto)
+        }
+    }
+}
+
 class FragmentoMapa : Fragment() {
 
     private var _binding: FragmentoMapaBinding? = null
     private val binding get() = _binding!!
 
-    private var capaUbicacion: MyLocationNewOverlay? = null
+    private var capaUbicacion: CapaMiUbicacion? = null
     private val marcadoresMapa = mutableListOf<Marker>()
     private var capaRuta: Polyline? = null
     private var modoAreaAmpliada: Boolean = false
+
+    private val puntosRutaOriginal = mutableListOf<GeoPoint>()
+    private var destinoRuta: GeoPoint? = null
+    private var esRutaRecta: Boolean = false
+
+    var alLlegarADestino: (() -> Unit)? = null
+    var alDesviarseDeRuta: ((GeoPoint, GeoPoint) -> Unit)? = null
+
+    private var ultimoTiempoActualizacionRuta: Long = 0L
+    private var contadorDesviaciones: Int = 0
+    private var ultimoTiempoRecalculo: Long = 0L
+
+    private var sensorManager: SensorManager? = null
+    private var sensorBrula: Sensor? = null
+    private var azimutSuavizado: Float = 0f
+    private var tieneAzimutIniciado: Boolean = false
+
+    var marcadorResaltadoId: Int? = null
+
+    private val oyenteSensorBrula = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent?) {
+            if (event?.sensor?.type == Sensor.TYPE_ROTATION_VECTOR) {
+                val rotationMatrix = FloatArray(9)
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                val orientation = FloatArray(3)
+                SensorManager.getOrientation(rotationMatrix, orientation)
+                var azimutGrados = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                if (azimutGrados < 0) azimutGrados += 360f
+
+                if (!tieneAzimutIniciado) {
+                    azimutSuavizado = azimutGrados
+                    tieneAzimutIniciado = true
+                    capaUbicacion?.actualizarAzimut(azimutSuavizado)
+                    _binding?.mapaFeria?.invalidate()
+                } else {
+                    val diferencia = Math.abs(azimutGrados - azimutSuavizado)
+                    if (diferencia > 2.0f && diferencia < 358.0f) {
+                        azimutSuavizado += 0.2f * (azimutGrados - azimutSuavizado)
+                        capaUbicacion?.actualizarAzimut(azimutSuavizado)
+                        _binding?.mapaFeria?.invalidate()
+                    }
+                }
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
 
     var ubicacionDeseada: Boolean = false
         set(value) {
@@ -203,16 +289,31 @@ class FragmentoMapa : Fragment() {
                     capaUbicacion = null
                 }
                 val proveedorGps = GpsMyLocationProvider(requireContext())
-                capaUbicacion = MyLocationNewOverlay(proveedorGps, mapa).apply {
+                capaUbicacion = CapaMiUbicacion(proveedorGps, mapa).apply {
                     enableMyLocation()
+
+                    val drawableFlecha = ContextCompat.getDrawable(requireContext(), R.drawable.ic_flecha_ubicacion)
+                    if (drawableFlecha != null) {
+                        val bitmapFlecha = drawableToBitmap(drawableFlecha)
+                        setDirectionIcon(bitmapFlecha)
+                        setPersonIcon(bitmapFlecha)
+                        setDirectionAnchor(0.5f, 0.5f)
+                        setPersonAnchor(0.5f, 0.5f)
+                    }
+
+                    alCambiarUbicacion = { miPos ->
+                        procesarCambioUbicacionParaRuta(miPos)
+                    }
                 }
                 mapa.overlays.add(capaUbicacion)
             } else {
                 capaUbicacion?.enableMyLocation()
             }
+            activarBrulaSensores()
             mapa.invalidate()
         } else {
             Log.d("FeriApp", "FragmentoMapa: aplicando ubicacionDeseada = false")
+            desactivarBrulaSensores()
             capaUbicacion?.let {
                 try {
                     it.disableMyLocation()
@@ -224,6 +325,79 @@ class FragmentoMapa : Fragment() {
             capaUbicacion = null
             mapa.invalidate()
         }
+    }
+
+    private fun drawableToBitmap(drawable: Drawable): Bitmap {
+        if (drawable is BitmapDrawable) {
+            return drawable.bitmap
+        }
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth.coerceAtLeast(1),
+            drawable.intrinsicHeight.coerceAtLeast(1),
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
+    private fun activarBrulaSensores() {
+        if (sensorManager == null) {
+            sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            sensorBrula = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        }
+        sensorBrula?.let { sensor ->
+            sensorManager?.registerListener(oyenteSensorBrula, sensor, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    private fun desactivarBrulaSensores() {
+        sensorManager?.unregisterListener(oyenteSensorBrula)
+    }
+
+    private fun procesarCambioUbicacionParaRuta(miPos: GeoPoint) {
+        val dest = destinoRuta ?: return
+        if (puntosRutaOriginal.isEmpty()) return
+
+        val ahora = System.currentTimeMillis()
+        if (ahora - ultimoTiempoActualizacionRuta < 1000L) return
+        ultimoTiempoActualizacionRuta = ahora
+
+        // 1. Llegada al destino (< 15m)
+        val distDestino = RutaUtil.distanciaEnMetros(miPos, dest)
+        if (distDestino < 15.0) {
+            Toast.makeText(requireContext(), R.string.msg_llegaste_a_destino, Toast.LENGTH_SHORT).show()
+            val cb = alLlegarADestino
+            limpiarRuta()
+            cb?.invoke()
+            return
+        }
+
+        // 2. Desviación de la ruta (> 40m)
+        val distRuta = RutaUtil.distanciaMinimaARutaMetros(miPos, puntosRutaOriginal)
+        if (distRuta > 40.0) {
+            contadorDesviaciones++
+            if (contadorDesviaciones >= 3 && (ahora - ultimoTiempoRecalculo >= 20000L)) {
+                contadorDesviaciones = 0
+                ultimoTiempoRecalculo = ahora
+                Toast.makeText(requireContext(), R.string.msg_recalculando_ruta, Toast.LENGTH_SHORT).show()
+                alDesviarseDeRuta?.invoke(miPos, dest)
+                return
+            }
+        } else {
+            contadorDesviaciones = 0
+        }
+
+        // 3. Recortar la polilínea desde la posición actual
+        val polilinea = capaRuta ?: return
+        if (esRutaRecta) {
+            polilinea.setPoints(listOf(miPos, dest))
+        } else {
+            val recortados = RutaUtil.recortarRuta(puntosRutaOriginal, miPos)
+            polilinea.setPoints(recortados)
+        }
+        _binding?.mapaFeria?.invalidate()
     }
 
     fun desactivarUbicacion() {
@@ -286,6 +460,33 @@ class FragmentoMapa : Fragment() {
         }
     }
 
+    fun resaltarMarcador(id: Int?) {
+        marcadorResaltadoId = id
+        val mapa = _binding?.mapaFeria ?: return
+        var marcadorDestacado: Marker? = null
+
+        marcadoresMapa.forEach { marcador ->
+            val idMarcadorInt = marcador.id?.toIntOrNull()
+            val mData = ultimaListaMarcadores?.find { it.id == idMarcadorInt }
+            if (mData?.icono == null) {
+                if (idMarcadorInt != null && idMarcadorInt == id) {
+                    marcador.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_marcador_comercio_seleccionado)
+                    marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                    marcadorDestacado = marcador
+                } else {
+                    marcador.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_marcador_comercio)
+                    marcador.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                }
+            }
+        }
+
+        if (marcadorDestacado != null) {
+            mapa.overlays.remove(marcadorDestacado)
+            mapa.overlays.add(marcadorDestacado)
+        }
+        mapa.invalidate()
+    }
+
     fun centrarEnMarcadores(marcadores: List<MarcadorMapa>) {
         val mapa = _binding?.mapaFeria ?: return
         if (marcadores.isEmpty()) return
@@ -319,6 +520,12 @@ class FragmentoMapa : Fragment() {
         val mapa = _binding?.mapaFeria ?: return
         limpiarRuta()
 
+        puntosRutaOriginal.clear()
+        puntosRutaOriginal.addAll(puntos)
+        destinoRuta = puntos.lastOrNull()
+        esRutaRecta = false
+        contadorDesviaciones = 0
+
         val colorRuta = ContextCompat.getColor(requireContext(), R.color.color_secundario)
         val anchoPx = (7 * resources.displayMetrics.density)
         val polilinea = Polyline(mapa).apply {
@@ -336,6 +543,13 @@ class FragmentoMapa : Fragment() {
     fun dibujarRutaRecta(origen: GeoPoint, destino: GeoPoint) {
         val mapa = _binding?.mapaFeria ?: return
         limpiarRuta()
+
+        puntosRutaOriginal.clear()
+        puntosRutaOriginal.add(origen)
+        puntosRutaOriginal.add(destino)
+        destinoRuta = destino
+        esRutaRecta = true
+        contadorDesviaciones = 0
 
         val colorRuta = ContextCompat.getColor(requireContext(), R.color.color_secundario)
         val anchoPx = (7 * resources.displayMetrics.density)
@@ -358,6 +572,10 @@ class FragmentoMapa : Fragment() {
             mapa.overlays.remove(it)
         }
         capaRuta = null
+        puntosRutaOriginal.clear()
+        destinoRuta = null
+        esRutaRecta = false
+        contadorDesviaciones = 0
 
         if (modoAreaAmpliada) {
             modoAreaAmpliada = false
@@ -411,7 +629,10 @@ class FragmentoMapa : Fragment() {
         marcadoresMapa.forEach { mapa.overlays.remove(it) }
         marcadoresMapa.clear()
 
+        var marcadorDestacado: Marker? = null
+
         marcadores.forEach { m ->
+            val esDestacado = (marcadorResaltadoId != null && m.id == marcadorResaltadoId)
             val marcador = Marker(mapa).apply {
                 position = GeoPoint(m.latitud, m.longitud)
                 title = m.titulo
@@ -420,6 +641,14 @@ class FragmentoMapa : Fragment() {
                 if (m.icono != null) {
                     icon = ContextCompat.getDrawable(requireContext(), m.icono)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                } else {
+                    val iconoRes = if (esDestacado) {
+                        R.drawable.ic_marcador_comercio_seleccionado
+                    } else {
+                        R.drawable.ic_marcador_comercio
+                    }
+                    icon = ContextCompat.getDrawable(requireContext(), iconoRes)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                 }
                 setOnMarkerClickListener { _, _ ->
                     alSeleccionarMarcador?.invoke(m.id, m.datosOriginales)
@@ -427,13 +656,22 @@ class FragmentoMapa : Fragment() {
                 }
             }
             marcadoresMapa.add(marcador)
-            mapa.overlays.add(marcador)
+            if (esDestacado && m.icono == null) {
+                marcadorDestacado = marcador
+            } else {
+                mapa.overlays.add(marcador)
+            }
+        }
+
+        marcadorDestacado?.let {
+            mapa.overlays.add(it)
         }
         mapa.invalidate()
     }
 
     fun limpiarMarcadores() {
         ultimaListaMarcadores = null
+        marcadorResaltadoId = null
         val mapa = _binding?.mapaFeria ?: return
         marcadoresMapa.forEach { mapa.overlays.remove(it) }
         marcadoresMapa.clear()
@@ -444,6 +682,9 @@ class FragmentoMapa : Fragment() {
         super.onResume()
         _binding?.mapaFeria?.onResume()
         aplicarUbicacionDeseada()
+        if (ubicacionDeseada) {
+            activarBrulaSensores()
+        }
         if (ultimaListaMarcadores != null) {
             dibujarMarcadoresInterno()
         }
@@ -451,6 +692,7 @@ class FragmentoMapa : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        desactivarBrulaSensores()
         try {
             capaUbicacion?.disableMyLocation()
         } catch (e: Exception) {
@@ -465,6 +707,7 @@ class FragmentoMapa : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        desactivarBrulaSensores()
         try {
             capaUbicacion?.disableMyLocation()
         } catch (e: Exception) {

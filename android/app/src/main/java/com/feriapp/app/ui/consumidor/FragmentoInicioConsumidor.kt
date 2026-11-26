@@ -73,11 +73,9 @@ class FragmentoInicioConsumidor : Fragment() {
     private var modoBusquedaActivo = false
     private var modoResultadosActivo = false
 
-    private var fotosDetalle: List<String> = emptyList()
-    private var indiceFotoActual = 0
+    private var datosDetalleActual: DatosDetallePanel? = null
 
     private var controladorMenuLateral: ControladorMenuLateral? = null
-
     private lateinit var adaptadorSugerencias: AdaptadorSugerencias
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +101,12 @@ class FragmentoInicioConsumidor : Fragment() {
 
         fragmentoMapa = childFragmentManager.findFragmentById(R.id.contenedorMapa) as? FragmentoMapa
         fragmentoMapa?.ubicacionDeseada = viewModel.ubicacionActiva
+        fragmentoMapa?.alLlegarADestino = {
+            viewModel.limpiarRuta()
+        }
+        fragmentoMapa?.alDesviarseDeRuta = { miPos, destino ->
+            viewModel.trazarRuta(miPos, destino)
+        }
 
         configurarEnfoqueInicial()
         configurarNavegacion()
@@ -187,12 +191,15 @@ class FragmentoInicioConsumidor : Fragment() {
                 is EstadoInicioConsumidor.Exito -> {
                     listaPuestosCargados = estadoActual.puestos
                     fragmentoMapa?.mostrarMarcadoresPuestos(estadoActual.puestos)
+                    fragmentoMapa?.resaltarMarcador(viewModel.marcadorSeleccionadoId)
                 }
                 is EstadoInicioConsumidor.Error -> {
                     viewModel.cargarPuestos()
                 }
                 else -> {}
             }
+        } else {
+            fragmentoMapa?.resaltarMarcador(viewModel.marcadorSeleccionadoId)
         }
     }
 
@@ -285,6 +292,8 @@ class FragmentoInicioConsumidor : Fragment() {
         binding.tarjetaPuesto.visibility = View.GONE
         viewModel.puestoNormalSeleccionado = null
         viewModel.productoResultadoSeleccionado = null
+        viewModel.marcadorSeleccionadoId = null
+        fragmentoMapa?.resaltarMarcador(null)
 
         binding.btnVolverBusqueda.visibility = View.VISIBLE
         binding.capaOscuraBusqueda.visibility = View.VISIBLE
@@ -326,6 +335,7 @@ class FragmentoInicioConsumidor : Fragment() {
             }
         }
         viewModel.busquedaNuevaRealizada = true
+        viewModel.busquedaPorNombre = !nombre.isNullOrBlank()
         viewModel.modoResultadosActivo = true
         viewModel.textoBusqueda = terminoMostrar
 
@@ -346,6 +356,8 @@ class FragmentoInicioConsumidor : Fragment() {
         viewModel.textoBusqueda = ""
         viewModel.productoResultadoSeleccionado = null
         viewModel.puestoNormalSeleccionado = null
+        viewModel.marcadorSeleccionadoId = null
+        fragmentoMapa?.resaltarMarcador(null)
         viewModel.limpiarRuta()
         viewModel.cerrarDetalle()
         busquedaViewModel.limpiarResultados()
@@ -372,20 +384,6 @@ class FragmentoInicioConsumidor : Fragment() {
             viewModel.cerrarDetalle()
         }
 
-        binding.btnFotoAnterior.setOnClickListener {
-            if (fotosDetalle.isNotEmpty()) {
-                indiceFotoActual = (indiceFotoActual - 1 + fotosDetalle.size) % fotosDetalle.size
-                mostrarFotoActual()
-            }
-        }
-
-        binding.btnFotoSiguiente.setOnClickListener {
-            if (fotosDetalle.isNotEmpty()) {
-                indiceFotoActual = (indiceFotoActual + 1) % fotosDetalle.size
-                mostrarFotoActual()
-            }
-        }
-
         binding.btnTrazarRuta.setOnClickListener {
             if (!binding.switchUbicacion.isChecked) {
                 Toast.makeText(requireContext(), R.string.activa_ubicacion_primero, Toast.LENGTH_SHORT).show()
@@ -407,32 +405,77 @@ class FragmentoInicioConsumidor : Fragment() {
         }
     }
 
-    private fun mostrarFotoActual() {
-        if (fotosDetalle.isEmpty()) {
-            binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
+    private fun actualizarContenidoDetallePanel() {
+        val datos = datosDetalleActual ?: return
+        val productos = datos.productos
+
+        if (productos.isEmpty()) {
+            binding.tvNombreProductoDetalle.visibility = View.GONE
+            binding.tvPrecioDetalle.visibility = View.GONE
+            binding.tvDisponibleDetalle.visibility = View.GONE
             binding.btnFotoAnterior.visibility = View.GONE
             binding.btnFotoSiguiente.visibility = View.GONE
-            binding.tvContadorFotos.text = getString(R.string.sin_fotos)
+            binding.tvContadorFotos.visibility = View.GONE
+
+            binding.tvDescripcionDetalle.text = getString(R.string.sin_descripcion)
+
+            Glide.with(this).clear(binding.imgFotoDetalle)
+            binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
             return
         }
 
-        val total = fotosDetalle.size
-        if (total == 1) {
-            binding.btnFotoAnterior.visibility = View.GONE
-            binding.btnFotoSiguiente.visibility = View.GONE
-            binding.tvContadorFotos.text = getString(R.string.formato_contador_fotos, 1, 1)
+        val idx = viewModel.indiceProductoDetalleActual.coerceIn(0, productos.size - 1)
+        val prodActual = productos[idx]
+
+        Glide.with(this).clear(binding.imgFotoDetalle)
+
+        if (!prodActual.fotoUrl.isNullOrBlank()) {
+            val urlImagen = construirUrlImagen(prodActual.fotoUrl)
+            Glide.with(this)
+                .load(urlImagen)
+                .placeholder(R.drawable.ic_puesto_placeholder)
+                .error(R.drawable.ic_puesto_placeholder)
+                .into(binding.imgFotoDetalle)
         } else {
-            binding.btnFotoAnterior.visibility = View.VISIBLE
-            binding.btnFotoSiguiente.visibility = View.VISIBLE
-            binding.tvContadorFotos.text = getString(R.string.formato_contador_fotos, indiceFotoActual + 1, total)
+            binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
         }
 
-        val urlImagen = construirUrlImagen(fotosDetalle[indiceFotoActual])
-        Glide.with(this)
-            .load(urlImagen)
-            .placeholder(R.drawable.ic_puesto_placeholder)
-            .error(R.drawable.ic_puesto_placeholder)
-            .into(binding.imgFotoDetalle)
+        binding.tvNombreProductoDetalle.visibility = View.VISIBLE
+        binding.tvNombreProductoDetalle.text = prodActual.nombre
+
+        binding.tvDescripcionDetalle.text = if (prodActual.descripcion.isNullOrBlank()) {
+            getString(R.string.sin_descripcion)
+        } else {
+            prodActual.descripcion
+        }
+
+        binding.tvPrecioDetalle.visibility = View.VISIBLE
+        binding.tvPrecioDetalle.text = prodActual.precioTexto
+        binding.tvDisponibleDetalle.visibility = View.VISIBLE
+        binding.tvDisponibleDetalle.text = prodActual.disponibleTexto
+
+        if (productos.size >= 2) {
+            binding.btnFotoAnterior.visibility = View.VISIBLE
+            binding.btnFotoSiguiente.visibility = View.VISIBLE
+            binding.tvContadorFotos.visibility = View.VISIBLE
+            binding.tvContadorFotos.text = getString(R.string.formato_contador_fotos, idx + 1, productos.size)
+
+            binding.btnFotoAnterior.setOnClickListener {
+                val nuevoIdx = if (idx > 0) idx - 1 else productos.size - 1
+                viewModel.indiceProductoDetalleActual = nuevoIdx
+                actualizarContenidoDetallePanel()
+            }
+
+            binding.btnFotoSiguiente.setOnClickListener {
+                val nuevoIdx = if (idx < productos.size - 1) idx + 1 else 0
+                viewModel.indiceProductoDetalleActual = nuevoIdx
+                actualizarContenidoDetallePanel()
+            }
+        } else {
+            binding.btnFotoAnterior.visibility = View.GONE
+            binding.btnFotoSiguiente.visibility = View.GONE
+            binding.tvContadorFotos.visibility = View.GONE
+        }
     }
 
     private fun mostrarTeclado(view: View) {
@@ -551,6 +594,8 @@ class FragmentoInicioConsumidor : Fragment() {
                 binding.tarjetaPuesto.visibility = View.GONE
                 viewModel.puestoNormalSeleccionado = null
                 viewModel.productoResultadoSeleccionado = null
+                viewModel.marcadorSeleccionadoId = null
+                fragmentoMapa?.resaltarMarcador(null)
             } else if (modoResultadosActivo && datos is ProductoBuscado) {
                 viewModel.puestoNormalSeleccionado = null
                 mostrarDetalleResultado(datos)
@@ -567,21 +612,39 @@ class FragmentoInicioConsumidor : Fragment() {
             binding.tarjetaPuesto.visibility = View.GONE
             viewModel.puestoNormalSeleccionado = null
             viewModel.productoResultadoSeleccionado = null
+            viewModel.marcadorSeleccionadoId = null
+            fragmentoMapa?.resaltarMarcador(null)
         }
     }
 
     private fun mostrarDetallePuesto(puesto: Puesto) {
         viewModel.puestoNormalSeleccionado = puesto
+        viewModel.marcadorSeleccionadoId = puesto.idPuesto
+        fragmentoMapa?.resaltarMarcador(puesto.idPuesto)
+
         with(binding) {
             tvNombreProductoTarjeta.text = puesto.nombrePuesto
             tvPrecioProductoTarjeta.visibility = View.GONE
 
+            if (!puesto.descripcion.isNullOrBlank()) {
+                tvDescripcionPuestoTarjeta.text = puesto.descripcion
+                tvDescripcionPuestoTarjeta.visibility = View.VISIBLE
+            } else {
+                tvDescripcionPuestoTarjeta.text = ""
+                tvDescripcionPuestoTarjeta.visibility = View.GONE
+            }
+
             btnVerMas.visibility = View.VISIBLE
             btnVerMas.setOnClickListener {
+                tarjetaPuesto.visibility = View.GONE
                 viewModel.cargarDetalle(puesto.idPuesto, -1)
             }
 
-            tarjetaPuesto.visibility = View.VISIBLE
+            if (viewModel.estadoDetalle.value is EstadoDetalle.Listo) {
+                tarjetaPuesto.visibility = View.GONE
+            } else {
+                tarjetaPuesto.visibility = View.VISIBLE
+            }
 
             val urlImagen = construirUrlImagen(puesto.imagenUrl)
             Glide.with(this@FragmentoInicioConsumidor)
@@ -594,8 +657,12 @@ class FragmentoInicioConsumidor : Fragment() {
 
     private fun mostrarDetalleResultado(producto: ProductoBuscado) {
         viewModel.productoResultadoSeleccionado = producto
+        viewModel.marcadorSeleccionadoId = producto.idPuesto
+        fragmentoMapa?.resaltarMarcador(producto.idPuesto)
+
         with(binding) {
             tvNombreProductoTarjeta.text = producto.nombreProducto
+            tvDescripcionPuestoTarjeta.visibility = View.GONE
 
             tvPrecioProductoTarjeta.visibility = View.VISIBLE
             if (producto.disponible) {
@@ -613,10 +680,15 @@ class FragmentoInicioConsumidor : Fragment() {
 
             btnVerMas.visibility = View.VISIBLE
             btnVerMas.setOnClickListener {
+                tarjetaPuesto.visibility = View.GONE
                 viewModel.cargarDetalle(producto.idPuesto, producto.idProducto)
             }
 
-            tarjetaPuesto.visibility = View.VISIBLE
+            if (viewModel.estadoDetalle.value is EstadoDetalle.Listo) {
+                tarjetaPuesto.visibility = View.GONE
+            } else {
+                tarjetaPuesto.visibility = View.VISIBLE
+            }
 
             val urlImagen = construirUrlImagen(producto.imagenPuestoUrl)
             Glide.with(this@FragmentoInicioConsumidor)
@@ -657,6 +729,8 @@ class FragmentoInicioConsumidor : Fragment() {
                         binding.tarjetaPuesto.visibility = View.GONE
                         viewModel.puestoNormalSeleccionado = null
                         viewModel.productoResultadoSeleccionado = null
+                        viewModel.marcadorSeleccionadoId = null
+                        fragmentoMapa?.resaltarMarcador(null)
                     } else if (modoResultadosActivo) {
                         desactivarModoResultados()
                     } else {
@@ -681,6 +755,7 @@ class FragmentoInicioConsumidor : Fragment() {
                             listaPuestosCargados = estado.puestos
                             if (!modoResultadosActivo) {
                                 fragmentoMapa?.mostrarMarcadoresPuestos(estado.puestos)
+                                fragmentoMapa?.resaltarMarcador(viewModel.marcadorSeleccionadoId)
                             }
                         }
                         is EstadoInicioConsumidor.Error -> {
@@ -698,35 +773,28 @@ class FragmentoInicioConsumidor : Fragment() {
                     when (estado) {
                         is EstadoDetalle.Oculto -> {
                             binding.panelDetalle.visibility = View.GONE
+                            datosDetalleActual = null
+
+                            if (viewModel.puestoNormalSeleccionado != null) {
+                                mostrarDetallePuesto(viewModel.puestoNormalSeleccionado!!)
+                            } else if (viewModel.productoResultadoSeleccionado != null) {
+                                mostrarDetalleResultado(viewModel.productoResultadoSeleccionado!!)
+                            } else {
+                                binding.tarjetaPuesto.visibility = View.GONE
+                                fragmentoMapa?.resaltarMarcador(null)
+                            }
                         }
                         is EstadoDetalle.Cargando -> {
                             binding.indicadorCargandoPuestos.visibility = View.VISIBLE
                         }
                         is EstadoDetalle.Listo -> {
                             binding.indicadorCargandoPuestos.visibility = View.GONE
-                            val datos = estado.datos
-                            binding.tvTituloDetalle.text = datos.titulo
-                            binding.tvDescripcionDetalle.text = if (datos.descripcion.isNullOrBlank()) {
-                                getString(R.string.sin_descripcion)
-                            } else {
-                                datos.descripcion
-                            }
+                            datosDetalleActual = estado.datos
+                            binding.tvTituloDetalle.text = estado.datos.titulo
 
-                            if (datos.esProductoConcreto) {
-                                binding.tvPrecioDetalle.visibility = View.VISIBLE
-                                binding.tvPrecioDetalle.text = datos.precioTexto
-                                binding.tvDisponibleDetalle.visibility = View.VISIBLE
-                                binding.tvDisponibleDetalle.text = datos.disponibleTexto
-                            } else {
-                                binding.tvPrecioDetalle.visibility = View.GONE
-                                binding.tvDisponibleDetalle.visibility = View.GONE
-                            }
-
-                            fotosDetalle = datos.fotos
-                            indiceFotoActual = 0
-                            mostrarFotoActual()
-
+                            actualizarContenidoDetallePanel()
                             binding.panelDetalle.visibility = View.VISIBLE
+                            binding.tarjetaPuesto.visibility = View.GONE
                         }
                         is EstadoDetalle.Error -> {
                             binding.indicadorCargandoPuestos.visibility = View.GONE
@@ -824,6 +892,25 @@ class FragmentoInicioConsumidor : Fragment() {
                             if (viewModel.busquedaNuevaRealizada) {
                                 viewModel.busquedaNuevaRealizada = false
                                 fragmentoMapa?.centrarEnMarcadores(marcadores)
+
+                                val lista = estado.productosAgrupados
+                                if (lista.size == 1) {
+                                    mostrarDetalleResultado(lista.first())
+                                } else if (lista.size > 1 && viewModel.busquedaPorNombre) {
+                                    val miPos = fragmentoMapa?.obtenerMiPosicion()
+                                    val productoElegido = if (miPos != null) {
+                                        lista.minByOrNull { p ->
+                                            val dx = p.latitud - miPos.latitude
+                                            val dy = p.longitud - miPos.longitude
+                                            dx * dx + dy * dy
+                                        } ?: lista.first()
+                                    } else {
+                                        lista.first()
+                                    }
+                                    mostrarDetalleResultado(productoElegido)
+                                }
+                            } else {
+                                fragmentoMapa?.resaltarMarcador(viewModel.marcadorSeleccionadoId)
                             }
                         }
                         is EstadoResultadosBusqueda.SinResultados -> {
