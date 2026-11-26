@@ -10,7 +10,6 @@ data class ProductoBuscado(
     val nombreCategoria: String,
     val idPuesto: Int,
     val nombrePuesto: String,
-    val nombreComercial: String,
     val longitud: Double,
     val latitud: Double,
     val imagenProductoUrl: String?,

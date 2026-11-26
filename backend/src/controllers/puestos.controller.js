@@ -30,7 +30,6 @@ async function getPuestos(req, res) {
         p.estado,
         ST_X(p.ubicacion) AS longitud,
         ST_Y(p.ubicacion) AS latitud,
-        c.nombre_comercial,
         (SELECT ip.ruta_imagen FROM imagen_puesto ip WHERE ip.id_puesto = p.id_puesto) AS imagen
       FROM puesto p
       JOIN comerciante c ON c.id_comerciante = p.id_comerciante
@@ -59,7 +58,6 @@ async function getPuestosCercanos(req, res) {
       SELECT
         p.id_puesto,
         p.nombre_puesto,
-        c.nombre_comercial,
         ST_X(p.ubicacion) AS longitud,
         ST_Y(p.ubicacion) AS latitud,
         (SELECT ip.ruta_imagen FROM imagen_puesto ip WHERE ip.id_puesto = p.id_puesto) AS imagen,
@@ -103,7 +101,6 @@ async function getPuesto(req, res) {
         p.estado,
         ST_X(p.ubicacion) AS longitud,
         ST_Y(p.ubicacion) AS latitud,
-        c.nombre_comercial,
         (SELECT ip.ruta_imagen FROM imagen_puesto ip WHERE ip.id_puesto = p.id_puesto) AS imagen
       FROM puesto p
       JOIN comerciante c ON c.id_comerciante = p.id_comerciante

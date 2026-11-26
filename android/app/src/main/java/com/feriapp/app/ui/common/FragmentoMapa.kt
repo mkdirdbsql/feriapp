@@ -446,7 +446,7 @@ class FragmentoMapa : Fragment() {
                 latitud = it.latitud,
                 longitud = it.longitud,
                 titulo = it.nombrePuesto,
-                subtitulo = it.nombreComercial,
+                subtitulo = null,
                 datosOriginales = it
             )
         }

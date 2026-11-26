@@ -47,7 +47,6 @@ async function getProductos(req, res) {
         cat.nombre_categoria,
         pu.id_puesto,
         pu.nombre_puesto,
-        c.nombre_comercial,
         ST_X(pu.ubicacion) AS longitud,
         ST_Y(pu.ubicacion) AS latitud,
         (SELECT im.ruta_imagen FROM imagen_producto im

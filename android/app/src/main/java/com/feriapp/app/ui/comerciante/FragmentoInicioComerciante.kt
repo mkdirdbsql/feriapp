@@ -464,7 +464,7 @@ class FragmentoInicioComerciante : Fragment() {
                     latitud = vecino.latitud,
                     longitud = vecino.longitud,
                     titulo = vecino.nombrePuesto,
-                    subtitulo = vecino.nombreComercial,
+                    subtitulo = null,
                     icono = R.drawable.ic_marcador_puesto_vecino,
                     datosOriginales = vecino
                 )
@@ -491,7 +491,6 @@ class FragmentoInicioComerciante : Fragment() {
             binding.globoAgregarProducto.visibility = View.GONE
 
             binding.tvNombrePuestoVecino.text = vecinoSeleccionado.nombrePuesto
-            binding.tvNombreComercialVecino.text = vecinoSeleccionado.nombreComercial
 
             val urlImagen = construirUrlImagen(vecinoSeleccionado.imagenPuestoUrl)
             Glide.with(this)

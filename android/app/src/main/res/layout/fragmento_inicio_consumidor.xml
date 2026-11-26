@@ -125,70 +125,82 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/panelBusqueda"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_margin="12dp"
             android:visibility="gone"
             app:cardBackgroundColor="@color/color_fondo"
             app:cardCornerRadius="12dp"
             app:cardElevation="6dp"
+            app:layout_constraintBottom_toTopOf="@id/barraInferior"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior">
+            app:layout_constraintTop_toBottomOf="@id/layoutBarraSuperior"
+            app:layout_constraintVertical_bias="0.0">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- CONTENEDOR CATEGORÍAS -->
-                <LinearLayout
-                    android:id="@+id/contenedorCategorias"
+                <!-- SCROLLVIEW DE CATEGORÍAS -->
+                <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scrollCategorias"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:clipToPadding="false"
+                    android:paddingBottom="24dp">
 
-                    <TextView
-                        style="@style/estilo_titulo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/titulo_categorias"
-                        android:textSize="18sp" />
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupCategorias"
+                    <LinearLayout
+                        android:id="@+id/contenedorCategorias"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        app:chipSpacing="8dp"
-                        app:singleLine="false" />
-                </LinearLayout>
+                        android:orientation="vertical">
 
-                <!-- AVISO SIN COINCIDENCIAS -->
-                <TextView
-                    android:id="@+id/tvSinCoincidencias"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/sin_coincidencias_busqueda"
-                    android:textColor="@color/color_error"
-                    android:textSize="14sp"
-                    android:visibility="gone" />
+                        <TextView
+                            style="@style/estilo_titulo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/titulo_categorias"
+                            android:textSize="18sp" />
 
-                <!-- CONTENEDOR SUGERENCIAS -->
-                <LinearLayout
-                    android:id="@+id/contenedorSugerencias"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupCategorias"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            app:chipSpacing="8dp"
+                            app:singleLine="false" />
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvSugerencias"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-                </LinearLayout>
+                        <!-- AVISO SIN COINCIDENCIAS -->
+                        <TextView
+                            android:id="@+id/tvSinCoincidencias"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/sin_coincidencias_busqueda"
+                            android:textColor="@color/color_error"
+                            android:textSize="14sp"
+                            android:visibility="gone" />
+
+                        <!-- CONTENEDOR SUGERENCIAS -->
+                        <LinearLayout
+                            android:id="@+id/contenedorSugerencias"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvSugerencias"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.core.widget.NestedScrollView>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -293,6 +305,39 @@
                         android:textStyle="bold"
                         android:visibility="gone"
                         tools:text="Nombre del Producto" />
+
+                    <!-- ERROR AL CARGAR PRODUCTOS -->
+                    <TextView
+                        android:id="@+id/tvErrorProductosDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:textColor="@color/color_error"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        tools:text="Error al cargar productos" />
+
+                    <Button
+                        android:id="@+id/btnReintentarProductosDetalle"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/btn_reintentar"
+                        android:visibility="gone" />
+
+                    <!-- AVISO PUESTO SIN PRODUCTOS -->
+                    <TextView
+                        android:id="@+id/tvSinProductosDetalle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:text="@string/sin_productos_comerciante"
+                        android:textColor="@color/color_texto"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
 
                     <TextView
                         android:id="@+id/tvContadorFotos"

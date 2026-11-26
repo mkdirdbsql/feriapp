@@ -257,15 +257,6 @@
                         android:textSize="16sp"
                         tools:text="Puesto Vecino" />
 
-                    <TextView
-                        android:id="@+id/tvNombreComercialVecino"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textColor="@color/color_texto"
-                        android:textSize="13sp"
-                        tools:text="Comercial Doña María" />
-
                     <LinearLayout
                         android:id="@+id/contenedorProductosVecino"
                         android:layout_width="match_parent"

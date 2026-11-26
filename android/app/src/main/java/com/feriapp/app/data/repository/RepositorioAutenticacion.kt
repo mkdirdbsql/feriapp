@@ -37,8 +37,6 @@ class RepositorioAutenticacion(
         apellido: String,
         telefono: String,
         contrasena: String,
-        nombreComercial: String,
-        descripcionComercio: String?,
     ): Resultado<RespuestaSesion> {
         return ejecutarLlamadaSegura(gestorSesion) {
             servicioApi.registrarComerciante(
@@ -47,8 +45,6 @@ class RepositorioAutenticacion(
                     apellido = apellido,
                     telefono = telefono,
                     contrasena = contrasena,
-                    nombreComercial = nombreComercial,
-                    descripcionComercio = descripcionComercio,
                 )
             )
         }

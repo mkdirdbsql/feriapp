@@ -21,8 +21,20 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:indeterminate="true"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="0"
         app:indicatorColor="?attr/colorPrimary"
         app:trackCornerRadius="4dp" />
+
+    <TextView
+        android:id="@+id/tvPorcentajeCarga"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="0 %"
+        android:textColor="@color/color_texto"
+        android:textSize="14sp" />
 
 </LinearLayout>

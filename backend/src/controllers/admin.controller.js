@@ -43,7 +43,6 @@ async function listarComerciantes(req, res) {
         u.nombre,
         u.apellido,
         u.telefono,
-        c.nombre_comercial,
         c.estado,
         u.fecha_registro,
         pu.id_puesto,
@@ -78,8 +77,6 @@ async function obtenerComerciante(req, res) {
          u.nombre,
          u.apellido,
          u.telefono,
-         c.nombre_comercial,
-         c.descripcion,
          c.estado,
          u.fecha_registro
        FROM comerciante c
@@ -142,8 +139,7 @@ async function obtenerComerciante(req, res) {
 }
 
 // PUT /api/admin/comerciantes/:id
-// Body: cualquier combinación de { nombre, apellido, telefono, contrasena,
-// nombre_comercial, descripcion }
+// Body: cualquier combinación de { nombre, apellido, telefono, contrasena }
 async function actualizarComerciante(req, res) {
   const idComerciante = leerId(req.params.id);
   if (idComerciante === null) {
@@ -153,12 +149,10 @@ async function actualizarComerciante(req, res) {
   const nombre = textoOpcional(req.body.nombre);
   const apellido = textoOpcional(req.body.apellido);
   const telefono = textoOpcional(req.body.telefono);
-  const nombreComercial = textoOpcional(req.body.nombre_comercial);
-  const descripcion = textoOpcional(req.body.descripcion);
   const contrasena = req.body.contrasena == null ? null : String(req.body.contrasena);
 
-  if (nombre === '' || apellido === '' || nombreComercial === '') {
-    return res.status(400).json({ error: 'Nombre, apellido y nombre comercial no pueden estar vacíos' });
+  if (nombre === '' || apellido === '') {
+    return res.status(400).json({ error: 'Nombre y apellido no pueden estar vacíos' });
   }
   if (telefono !== null && !FORMATO_TELEFONO.test(telefono)) {
     return res.status(400).json({ error: 'El teléfono debe tener solo números (entre 7 y 15 dígitos)' });
@@ -192,14 +186,6 @@ async function actualizarComerciante(req, res) {
          contrasena = COALESCE($4, contrasena)
        WHERE id_usuario = $5`,
       [nombre, apellido, telefono, hash, idUsuario]
-    );
-
-    await client.query(
-      `UPDATE comerciante SET
-         nombre_comercial = COALESCE($1, nombre_comercial),
-         descripcion      = COALESCE($2, descripcion)
-       WHERE id_comerciante = $3`,
-      [nombreComercial, descripcion, idComerciante]
     );
 
     await client.query('COMMIT');

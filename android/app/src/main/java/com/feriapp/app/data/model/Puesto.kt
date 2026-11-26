@@ -7,7 +7,6 @@ data class Puesto(
     val estado: String?,
     val longitud: Double,
     val latitud: Double,
-    val nombreComercial: String,
     val imagenUrl: String?,
     val distanciaMetros: Double?,
 )

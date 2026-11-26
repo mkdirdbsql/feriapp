@@ -22,8 +22,6 @@
     <string name="etiqueta_nombre">Nombre</string>
     <string name="etiqueta_apellido">Apellido</string>
     <string name="etiqueta_telefono">Teléfono</string>
-    <string name="etiqueta_nombre_comercial">Nombre comercial</string>
-    <string name="etiqueta_descripcion_comercio">Descripción del comercio (opcional)</string>
     <string name="etiqueta_repetir_contrasena">Repetir contraseña</string>
     <string name="error_campo_requerido">Este campo es obligatorio</string>
     <string name="error_telefono_invalido">Ingresa un teléfono válido (7 a 15 dígitos)</string>
@@ -201,7 +199,7 @@
 
     <!-- PASO C9: EDICIÓN DE USUARIO POR EL ADMINISTRADOR -->
     <string name="formato_usuario_nombre">Usuario: %1$s %2$s</string>
-    <string name="formato_comercio_estado">Comercio: %1$s · Estado: %2$s</string>
+    <string name="formato_telefono_estado">Teléfono: %1$s · Estado: %2$s</string>
     <string name="estado_activo">Activo</string>
     <string name="estado_inactivo">Inactivo</string>
     <string name="formato_coordenadas">Ubicación: %1$.5f, %2$.5f</string>
@@ -237,4 +235,7 @@
     <string name="btn_compartir">Compartir</string>
     <string name="btn_cerrar">Cerrar</string>
     <string name="error_sin_app_para_abrir">No hay una app instalada para abrir este archivo, usa Compartir</string>
+
+    <!-- CARGA / SPLASH -->
+    <string name="formato_porcentaje_carga">%1$d %%</string>
 </resources>

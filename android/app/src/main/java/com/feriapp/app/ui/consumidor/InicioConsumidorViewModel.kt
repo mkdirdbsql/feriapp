@@ -1,5 +1,6 @@
 package com.feriapp.app.ui.consumidor
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feriapp.app.data.model.ProductoBuscado
@@ -38,7 +39,8 @@ data class DatosDetallePanel(
     val indiceInicial: Int,
     val latitud: Double,
     val longitud: Double,
-    val esProductoConcreto: Boolean
+    val esProductoConcreto: Boolean,
+    val errorProductos: String? = null
 )
 
 sealed class EstadoInicioConsumidor {
@@ -134,8 +136,11 @@ class InicioConsumidorViewModel(
             }
 
             val productosDetalle = mutableListOf<ProductoDetalle>()
+            var errorProductos: String? = null
+
             when (val resProductos = repositorioProductos.obtenerDePuesto(idPuesto)) {
                 is Resultado.Exito -> {
+                    Log.d("FeriApp", "obtenerDePuesto idPuesto=$idPuesto -> llegaron ${resProductos.datos.size} productos")
                     resProductos.datos.forEach { p ->
                         val precioTexto = if (p.precio % 1.0 == 0.0) {
                             "Precio: ${p.precio.toInt()} Bs"
@@ -157,7 +162,11 @@ class InicioConsumidorViewModel(
                         )
                     }
                 }
-                else -> {}
+                is Resultado.Error -> {
+                    Log.e("FeriApp", "Error al obtener productos de puesto idPuesto=$idPuesto: ${resProductos.mensaje} (código ${resProductos.codigo})")
+                    errorProductos = resProductos.mensaje
+                }
+                is Resultado.Cargando -> {}
             }
 
             val esProductoConcreto = (idProducto != -1)
@@ -178,7 +187,8 @@ class InicioConsumidorViewModel(
                 indiceInicial = idxInicial,
                 latitud = lat,
                 longitud = lng,
-                esProductoConcreto = esProductoConcreto
+                esProductoConcreto = esProductoConcreto,
+                errorProductos = errorProductos
             )
 
             _estadoDetalle.value = EstadoDetalle.Listo(datos)

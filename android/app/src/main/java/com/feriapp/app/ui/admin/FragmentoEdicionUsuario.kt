@@ -269,7 +269,7 @@ class FragmentoEdicionUsuario : Fragment() {
 
         binding.tvNombreUsuarioEdicion.text = getString(R.string.formato_usuario_nombre, detalle.nombre, detalle.apellido)
         val estadoTxt = if (detalle.estado.equals("activo", true)) getString(R.string.estado_activo) else getString(R.string.estado_inactivo)
-        binding.tvComercioEstadoEdicion.text = getString(R.string.formato_comercio_estado, detalle.nombreComercial, estadoTxt)
+        binding.tvComercioEstadoEdicion.text = getString(R.string.formato_telefono_estado, detalle.telefono, estadoTxt)
 
         // Foto Puesto
         val urlFotoPuesto = construirUrlImagen(detalle.puesto?.imagenUrl)

@@ -10,7 +10,6 @@ data class CategoriaFiltroComerciante(
 data class PuestoVecino(
     val idPuesto: Int,
     val nombrePuesto: String,
-    val nombreComercial: String,
     val latitud: Double,
     val longitud: Double,
     val imagenPuestoUrl: String?,

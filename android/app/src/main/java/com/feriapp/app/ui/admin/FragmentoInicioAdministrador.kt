@@ -333,7 +333,7 @@ class FragmentoInicioAdministrador : Fragment() {
                 id = c.idComerciante,
                 latitud = c.latitud!!,
                 longitud = c.longitud!!,
-                titulo = c.nombrePuesto ?: c.nombreComercial,
+                titulo = c.nombrePuesto ?: "${c.nombre} ${c.apellido}",
                 subtitulo = "${c.nombre} ${c.apellido}",
                 icono = iconoRes,
                 datosOriginales = c

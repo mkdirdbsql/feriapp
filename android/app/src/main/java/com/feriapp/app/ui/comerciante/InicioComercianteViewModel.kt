@@ -178,7 +178,6 @@ class InicioComercianteViewModel(
                     PuestoVecino(
                         idPuesto = idPuestoVecino,
                         nombrePuesto = primer.nombrePuesto,
-                        nombreComercial = primer.nombreComercial,
                         latitud = primer.latitud,
                         longitud = primer.longitud,
                         imagenPuestoUrl = primer.imagenPuestoUrl,

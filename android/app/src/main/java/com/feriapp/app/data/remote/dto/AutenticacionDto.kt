@@ -10,8 +10,6 @@ data class SolicitudRegistroComerciante(
     val apellido: String,
     val telefono: String,
     val contrasena: String,
-    val nombreComercial: String,
-    val descripcionComercio: String? = null,
 )
 
 data class RespuestaSesion(

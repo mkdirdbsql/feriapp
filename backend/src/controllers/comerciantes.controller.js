@@ -6,16 +6,16 @@ const LARGO_MINIMO_CLAVE = 6;
 const FORMATO_TELEFONO = /^[0-9]{7,15}$/;
 
 // POST /api/comerciantes/registro
-// Body: { nombre, apellido, telefono, contrasena, nombre_comercial, descripcion_comercio }
+// Body: { nombre, apellido, telefono, contrasena }
 // Crea SOLO la cuenta (usuario + comerciante) en una transacción. El puesto
 // se registra después con POST /api/puestos.
 // Devuelve el token para que el comerciante quede con la sesión iniciada
 // (dura 365 días: se registra una sola vez).
 async function registrarComerciante(req, res) {
-  const { nombre, apellido, telefono, contrasena, nombre_comercial, descripcion_comercio } = req.body;
+  const { nombre, apellido, telefono, contrasena } = req.body;
 
-  if (!nombre || !apellido || !telefono || !contrasena || !nombre_comercial) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios (nombre, apellido, telefono, contrasena, nombre_comercial)' });
+  if (!nombre || !apellido || !telefono || !contrasena) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios (nombre, apellido, telefono, contrasena)' });
   }
 
   const telefonoLimpio = String(telefono).trim();
@@ -41,9 +41,9 @@ async function registrarComerciante(req, res) {
     const id_usuario = usuarioResult.rows[0].id_usuario;
 
     const comercianteResult = await client.query(
-      `INSERT INTO comerciante (id_usuario, nombre_comercial, descripcion)
-       VALUES ($1, $2, $3) RETURNING id_comerciante`,
-      [id_usuario, String(nombre_comercial).trim(), descripcion_comercio || null]
+      `INSERT INTO comerciante (id_usuario)
+       VALUES ($1) RETURNING id_comerciante`,
+      [id_usuario]
     );
     const id_comerciante = comercianteResult.rows[0].id_comerciante;
 
@@ -90,8 +90,6 @@ async function obtenerPerfil(req, res) {
          u.nombre,
          u.apellido,
          u.telefono,
-         c.nombre_comercial,
-         c.descripcion,
          c.estado
        FROM comerciante c
        JOIN usuario u ON u.id_usuario = c.id_usuario
@@ -163,18 +161,15 @@ function textoOpcional(valor) {
 }
 
 // PUT /api/comerciantes/yo   (rol comerciante)
-// Body: cualquier combinación de { nombre, apellido, telefono, contrasena,
-// nombre_comercial, descripcion }
+// Body: cualquier combinación de { nombre, apellido, telefono, contrasena }
 async function actualizarPerfil(req, res) {
   const nombre = textoOpcional(req.body.nombre);
   const apellido = textoOpcional(req.body.apellido);
   const telefono = textoOpcional(req.body.telefono);
-  const nombreComercial = textoOpcional(req.body.nombre_comercial);
-  const descripcion = textoOpcional(req.body.descripcion);
   const contrasena = req.body.contrasena == null ? null : String(req.body.contrasena);
 
-  if (nombre === '' || apellido === '' || nombreComercial === '') {
-    return res.status(400).json({ error: 'Nombre, apellido y nombre comercial no pueden estar vacíos' });
+  if (nombre === '' || apellido === '') {
+    return res.status(400).json({ error: 'Nombre y apellido no pueden estar vacíos' });
   }
   if (telefono !== null && !FORMATO_TELEFONO.test(telefono)) {
     return res.status(400).json({ error: 'El teléfono debe tener solo números (entre 7 y 15 dígitos)' });
@@ -198,14 +193,6 @@ async function actualizarPerfil(req, res) {
          contrasena = COALESCE($4, contrasena)
        WHERE id_usuario = $5`,
       [nombre, apellido, telefono, hash, req.usuario.id_usuario]
-    );
-
-    await client.query(
-      `UPDATE comerciante SET
-         nombre_comercial = COALESCE($1, nombre_comercial),
-         descripcion      = COALESCE($2, descripcion)
-       WHERE id_comerciante = $3`,
-      [nombreComercial, descripcion, req.usuario.id_comerciante]
     );
 
     await client.query('COMMIT');

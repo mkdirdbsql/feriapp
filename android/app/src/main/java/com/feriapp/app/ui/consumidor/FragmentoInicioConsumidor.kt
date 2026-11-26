@@ -234,12 +234,14 @@ class FragmentoInicioConsumidor : Fragment() {
 
         binding.etBuscarProducto.setOnClickListener {
             activarModoBusqueda()
+            mostrarTeclado(binding.etBuscarProducto)
         }
 
         binding.etBuscarProducto.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_UP) {
                 v.performClick()
                 activarModoBusqueda()
+                mostrarTeclado(binding.etBuscarProducto)
             }
             false
         }
@@ -278,6 +280,12 @@ class FragmentoInicioConsumidor : Fragment() {
                 true
             } else {
                 false
+            }
+        }
+
+        binding.scrollCategorias.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (Math.abs(scrollY - oldScrollY) > 4) {
+                ocultarTeclado()
             }
         }
     }
@@ -408,8 +416,17 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun actualizarContenidoDetallePanel() {
         val datos = datosDetalleActual ?: return
         val productos = datos.productos
+        val errorMsg = datos.errorProductos
 
-        if (productos.isEmpty()) {
+        if (errorMsg != null) {
+            binding.tvErrorProductosDetalle.visibility = View.VISIBLE
+            binding.tvErrorProductosDetalle.text = errorMsg
+            binding.btnReintentarProductosDetalle.visibility = View.VISIBLE
+            binding.btnReintentarProductosDetalle.setOnClickListener {
+                viewModel.cargarDetalle(datos.idPuesto, datos.idProducto)
+            }
+
+            binding.tvSinProductosDetalle.visibility = View.GONE
             binding.tvNombreProductoDetalle.visibility = View.GONE
             binding.tvPrecioDetalle.visibility = View.GONE
             binding.tvDisponibleDetalle.visibility = View.GONE
@@ -418,11 +435,30 @@ class FragmentoInicioConsumidor : Fragment() {
             binding.tvContadorFotos.visibility = View.GONE
 
             binding.tvDescripcionDetalle.text = getString(R.string.sin_descripcion)
-
             Glide.with(this).clear(binding.imgFotoDetalle)
             binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
             return
         }
+
+        binding.tvErrorProductosDetalle.visibility = View.GONE
+        binding.btnReintentarProductosDetalle.visibility = View.GONE
+
+        if (productos.isEmpty()) {
+            binding.tvSinProductosDetalle.visibility = View.VISIBLE
+            binding.tvNombreProductoDetalle.visibility = View.GONE
+            binding.tvPrecioDetalle.visibility = View.GONE
+            binding.tvDisponibleDetalle.visibility = View.GONE
+            binding.btnFotoAnterior.visibility = View.GONE
+            binding.btnFotoSiguiente.visibility = View.GONE
+            binding.tvContadorFotos.visibility = View.GONE
+
+            binding.tvDescripcionDetalle.text = getString(R.string.sin_descripcion)
+            Glide.with(this).clear(binding.imgFotoDetalle)
+            binding.imgFotoDetalle.setImageResource(R.drawable.ic_puesto_placeholder)
+            return
+        }
+
+        binding.tvSinProductosDetalle.visibility = View.GONE
 
         val idx = viewModel.indiceProductoDetalleActual.coerceIn(0, productos.size - 1)
         val prodActual = productos[idx]
@@ -702,12 +738,7 @@ class FragmentoInicioConsumidor : Fragment() {
     private fun configurarObservadorTecladoEInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val tecladoVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-
             binding.barraInferior.visibility = if (tecladoVisible) View.GONE else View.VISIBLE
-
-            if (!tecladoVisible && modoBusquedaActivo) {
-                desactivarModoBusqueda()
-            }
             insets
         }
     }
@@ -884,7 +915,7 @@ class FragmentoInicioConsumidor : Fragment() {
                                     latitud = producto.latitud,
                                     longitud = producto.longitud,
                                     titulo = producto.nombrePuesto,
-                                    subtitulo = producto.nombreComercial,
+                                    subtitulo = null,
                                     datosOriginales = producto
                                 )
                             }

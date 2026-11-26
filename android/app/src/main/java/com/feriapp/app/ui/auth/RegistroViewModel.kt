@@ -28,8 +28,6 @@ class RegistroViewModel(
         apellido: String,
         telefono: String,
         contrasena: String,
-        nombreComercial: String,
-        descripcionComercio: String?,
     ) {
         viewModelScope.launch {
             _estado.value = EstadoRegistro.Cargando
@@ -38,8 +36,6 @@ class RegistroViewModel(
                 apellido = apellido,
                 telefono = telefono,
                 contrasena = contrasena,
-                nombreComercial = nombreComercial,
-                descripcionComercio = descripcionComercio.takeIf { !it.isNullOrBlank() },
             )
             when (resultado) {
                 is Resultado.Exito -> {

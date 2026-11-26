@@ -6,8 +6,6 @@ data class DetalleComerciante(
     val nombre: String,
     val apellido: String,
     val telefono: String,
-    val nombreComercial: String,
-    val descripcion: String?,
     val estado: String,
     val fechaRegistro: String,
     val puesto: PuestoPerfil?,

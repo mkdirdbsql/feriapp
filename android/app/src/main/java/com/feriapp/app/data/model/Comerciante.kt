@@ -6,7 +6,6 @@ data class Comerciante(
     val nombre: String,
     val apellido: String,
     val telefono: String,
-    val nombreComercial: String,
     val estado: String,
     val fechaRegistro: String,
     val idPuesto: Int?,

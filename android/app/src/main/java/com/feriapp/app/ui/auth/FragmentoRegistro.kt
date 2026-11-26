@@ -49,8 +49,6 @@ class FragmentoRegistro : Fragment() {
                 val nombre = binding.etNombre.text?.toString()?.trim().orEmpty()
                 val apellido = binding.etApellido.text?.toString()?.trim().orEmpty()
                 val telefono = binding.etTelefono.text?.toString()?.trim().orEmpty()
-                val nombreComercial = binding.etNombreComercial.text?.toString()?.trim().orEmpty()
-                val descripcionComercio = binding.etDescripcionComercio.text?.toString()?.trim().orEmpty()
                 val contrasena = binding.etContrasena.text?.toString()?.trim().orEmpty()
 
                 viewModel.registrarComerciante(
@@ -58,8 +56,6 @@ class FragmentoRegistro : Fragment() {
                     apellido = apellido,
                     telefono = telefono,
                     contrasena = contrasena,
-                    nombreComercial = nombreComercial,
-                    descripcionComercio = descripcionComercio,
                 )
             }
         }
@@ -72,7 +68,6 @@ class FragmentoRegistro : Fragment() {
         val nombre = binding.etNombre.text?.toString()?.trim().orEmpty()
         val apellido = binding.etApellido.text?.toString()?.trim().orEmpty()
         val telefono = binding.etTelefono.text?.toString()?.trim().orEmpty()
-        val nombreComercial = binding.etNombreComercial.text?.toString()?.trim().orEmpty()
         val contrasena = binding.etContrasena.text?.toString()?.trim().orEmpty()
         val repetirContrasena = binding.etRepetirContrasena.text?.toString()?.trim().orEmpty()
 
@@ -88,11 +83,6 @@ class FragmentoRegistro : Fragment() {
 
         if (telefono.isEmpty() || !telefono.matches(Regex("^\\d{7,15}$"))) {
             binding.layoutTelefono.error = getString(R.string.error_telefono_invalido)
-            esValido = false
-        }
-
-        if (nombreComercial.isEmpty()) {
-            binding.layoutNombreComercial.error = getString(R.string.error_campo_requerido)
             esValido = false
         }
 
@@ -113,7 +103,6 @@ class FragmentoRegistro : Fragment() {
         binding.layoutNombre.error = null
         binding.layoutApellido.error = null
         binding.layoutTelefono.error = null
-        binding.layoutNombreComercial.error = null
         binding.layoutContrasena.error = null
         binding.layoutRepetirContrasena.error = null
     }
